@@ -599,7 +599,7 @@ var uri = {};
 					.css({
 						'border': '1px #999 solid',
 						'border-radius': '4px',
-						'padding': '10px',
+						'padding': '10px 20px',
 						'background-color': '10px',
 						'color': '#000',
 						'line-height': '1.3'
@@ -615,12 +615,12 @@ var uri = {};
 								})
 								.end()
 							.find('.intro')
-								.html('<p>It is easy to get started with Maverick. It seems you have already started a controller but you see this screen because you seem to have no routes defined.</p><p>To define your first routes, all you need to do is following:</p><code>routes.add({ \'/\': \'[controllerName]\' })</code>')
+								.html('<p>It seems you have already started the application using <code>controllers.start();</code> but you see this screen because you seem to have no routes defined.</p><p>To define your first route, you need to do the following:</p><code>routes.add({ \'/\': \'<span style="color:#800;">[controllerName]</span>\' });</code>')
 								.find('code')
 									.css({
 										'background-color': '#eee',
 										'padding': '3px',
-										'margin-top': '10px',
+										'margin': '10px 0',
 										'display': 'inline-block'
 									})
 								.end()
