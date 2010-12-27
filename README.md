@@ -1,5 +1,5 @@
-★ Maverick - a Javascript-based MVC framework 
-=============================================
+★ Maverick - a small Javascript-based MVC framework 
+===================================================
 
 Maverick is right for you if...
 
