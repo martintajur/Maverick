@@ -60,7 +60,7 @@
 			}, 7000);
 			
 			this.timeouts[5] = setTimeout(function() {
-				uri.goTo('/');
+				that.stop();
 			}, 8000);
 
 			this.listen('uri.change', function() {
@@ -69,6 +69,7 @@
 		},
 		
 		onStop: function() {
+			uri.goTo('/');
 			if (this.articleOne) this.articleOne.stop();
 			if (this.articleTwo) this.articleTwo.stop();
 			for (var key in this.timeouts) {
