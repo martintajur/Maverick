@@ -5,7 +5,6 @@
 		// This here is the constructor function for this controller.
 		// In here we just define some default locally scoped variables that we will use later on.
 		
-		this.author = 'Steve McGriffin';
 		this.articleOne;
 		this.articleTwo;
 		this.timeouts = {};
@@ -33,20 +32,14 @@
 
 			this.listen('publish.articleOne', launchArticleOne);
 			
+			this.articles = models.article.getArticles();
+			
 			this.timeouts[0] = setTimeout(function() {
-				that.trigger('publish.articleOne', {
-					title: 'European Broadband-Internet Satellite Launched',
-					content: "A new satellite that promises to bring broadband Internet to homes and businesses across Europe and the Mediterranean was successfully launched on Sunday from the Baikonur Cosmodrome in Kazakhstan.",
-					author: that.author
-				});
+				that.trigger('publish.articleOne', that.articles[0]);
 			}, 1000);
 			
 			this.timeouts[1] = setTimeout(function() {
-				that.articleTwo = views.start('article', {
-					title: 'Study ties brain structure size to socializing ',
-					content: "NEW YORK (AP) - Do you spend time with a lot of friends? That might mean a particular part of your brain is larger than usual. It's the amygdala, which lies deep inside.",
-					author: that.author
-				});
+				that.articleTwo = views.start('article', that.articles[1]);
 			}, 2000);
 			
 			this.timeouts[2] = setTimeout(function() {
@@ -58,13 +51,9 @@
 			}, 6000);
 
 			this.timeouts[4] = setTimeout(function() {
-				that.stop();
-			}, 7000);
-			
-			this.timeouts[5] = setTimeout(function() {
 				uri.goTo('/');
 				that.stop();
-			}, 8000);
+			}, 7000);
 
 			this.listen('uri.change', function() {
 				that.stop();

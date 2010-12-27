@@ -214,6 +214,9 @@ var uri = {};
 			};
 			$.extend(modelProto, givenProto);
 			_m.availableModels[modelName].prototype = modelProto;
+	
+			models[modelName] = new _m.availableModels[modelName]();
+			_model.isStarted = function() { return true; };
 		}
 	};
 	
@@ -477,6 +480,8 @@ var uri = {};
 			if (_m.stateContainer === 'hash') {
 				document.location.hash = newUri;
 				if (_m.debug) { _m.log('URI changed to ' + newUri); }
+				_m.uriHelper.stateChange();
+				controllers.start();
 				return true;
 			}
 			else if (_m.stateContainer === 'history') {
