@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>MVC test</title>
+		
+		<script src="jquery-1.4.4.js"></script>
+		<script src="../js/mvc.js"></script>
+		
+		<script src="../js/controllers/demoController.js"></script>
+		<script src="../js/controllers/articleController.js"></script>
+		
+		<script src="../js/views/articleView.js"></script>
+		<script src="../js/views/demoView.js"></script>
+		
+		<script type="text/javascript">
+			$(function() {
+				routes.add({'/': 'demo'});
+				routes.add({'/articles': 'article'});
+				controllers.start();
+			});
+		</script>
+		
+		<link rel="stylesheet" href="demo.css" media="all">
+	</head>
+	
+	<body>
+		
+	</body>
+</html>
