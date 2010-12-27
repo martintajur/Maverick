@@ -19,7 +19,7 @@
 			
 			this.intro = $('<div><h1></h1><div class="intro"></div></div>')
 				.find('.intro')
-					.html('<p class="firstLine">You have successfully launched this demo application running on Maverick MVC framework.</p><p>This demo is pretty simple and helps you understand how to build a controller and a view. This demo consists of 2 controllers and 2 views - buttonController and articleController.</p><p>When you press the "Launch articles" button below, the application state (or URI) is switched to <code>/articles</code>, and the articleController is launched. The articleController will then display some news articles and stop itself soon after, changing the URI back to <code>/</code> which is routed to the buttonController, the current controller.</p>')
+					.html('<p class="firstLine">You have successfully launched this demo application running on Maverick MVC framework.</p><p>This demo is pretty simple and helps you understand how to build a basic controller and a view. This demo consists of 2 controllers and 2 views - buttonController and articleController, buttonView and articleView.</p><p>When you press the "Launch articles" button below, the application state (or URI) is switched to <code>/articles</code>, and the articleController is launched. The articleController will then display some news articles and stop itself soon after, changing the URI back to <code>/</code> which is routed to the buttonController, the current controller.</p>')
 					.end()
 				.find('h1')
 					.addClass('intro')

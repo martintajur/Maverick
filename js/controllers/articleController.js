@@ -62,6 +62,7 @@
 			}, 7000);
 			
 			this.timeouts[5] = setTimeout(function() {
+				uri.goTo('/');
 				that.stop();
 			}, 8000);
 
@@ -70,14 +71,17 @@
 			});
 		},
 		
-		onStop: function() {
-			uri.goTo('/');
-			if (this.articleOne) this.articleOne.stop();
-			if (this.articleTwo) this.articleTwo.stop();
+		removeElements: function() {
+			if (this.articleOne) { this.articleOne.stop(); }
+			if (this.articleTwo) { this.articleTwo.stop(); }
 			for (var key in this.timeouts) {
 				clearTimeout(this.timeouts[key]);
 			}
 			delete this.timeouts;
+		},
+		
+		onStop: function() {
+			this.removeElements();
 		}
 		
 	});

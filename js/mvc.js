@@ -30,9 +30,15 @@ var routes = {};
 var uri = {};
 
 (function() {
-	
+	if (typeof jQuery !== 'function') {
+		throw new Error('jQuery not loaded - cannot start Maverick');
+	}
+
 	// enable/disable internal debugging
-	this.debug = true; 
+	this.debug = true;
+	
+	// application state container ('hash' or 'history', default 'history')
+	this.stateContainer = (document.location.protocol === 'file:' ? 'hash' : 'history');
 	
 	// internal logger
 	this.log = (window.console.log ? function() { window.console.log('Maverick', arguments); } : function() { });
@@ -56,6 +62,9 @@ var uri = {};
 	this.availableControllers = {};
 	this.availableModels = {};
 	
+	// application state container
+	this.appState = {};
+	
 	// uri helper that contains internal data about uri segments, etc
 	this.uriHelper = {};
 	
@@ -77,15 +86,58 @@ var uri = {};
 		}
 	)();
 	
+	this.uriHelper._stateManagerRunning = false;
+
 	// internal reference within the main function to itself
 	var _m = this;
 	
-	// prototype global objects
-	if (!String.prototype.escapeRegexp) {
-		String.prototype.escapeRegexp = function() {
-			var specials = new RegExp("[.*+?|()\\[\\]{}\\\\]", "g"); // .*+?|()[]{}\
-			return this.replace(specials, "\\$&");
-		};
+	// self-executing anonymous function that initiates the URI object
+	this.uriHelper.stateManager = function() {
+		if (_m.uriHelper._stateManagerRunning === false) {
+			if (_m.debug) { _m.log('State Manager launched.'); }
+			
+			_m.uriHelper.stateChange();
+					
+			if (_m.uriHelper.listener) clearInterval(_m.uriHelper.listener);
+			
+			if (_m.stateContainer === 'hash') {
+				// hash parameter listener function
+				_m.uriHelper.listener = setInterval(function() {
+					if (_m.uriHelper.string !== document.location.hash.toString().substr(1)) {
+						if (_m.debug) { _m.log('Hash listener found out about the new URI.'); }
+		
+						_m.uriHelper.stateChange();
+						controllers.start();
+					}
+				}, 50);
+			}
+			else if (_m.stateContainer === 'history') {
+				// hash parameter listener function
+				_m.uriHelper.listener = setInterval(function() {
+					if (_m.uriHelper.string !== document.location.href.toString().replace(_m.uriHelper.baseUri, '')) {
+						if (_m.debug) { _m.log('History listener found out about the new URI.'); }
+		
+						_m.uriHelper.stateChange();
+						controllers.start();
+					}
+				}, 50);
+			}
+		}
+		_m.uriHelper._stateManagerRunning = true;
+	};
+
+	this.uriHelper.stateChange = function() {
+		if (_m.stateContainer === 'hash') {
+			if (_m.debug) { _m.log('Application state changed.'); }
+			_m.uriHelper.string = document.location.hash.toString().substr(1);
+			_m.uriHelper.segments = _m.uriHelper.string.split('/');
+		}
+		else if (_m.stateContainer === 'history') {
+			if (_m.debug) { _m.log('Application state changed.'); }
+			_m.uriHelper.string = document.location.href.toString().replace(_m.uriHelper.baseUri, '');
+			_m.uriHelper.segments = _m.uriHelper.string.split('/');
+		}
+		_m.events.trigger('uri.change', {});
 	}
 	
 	// stores a new listener
@@ -156,17 +208,11 @@ var uri = {};
 				getName: function() {
 					return modelName;
 				},
-				onStart: function() {
-					return;
-				},
-				onStop: function() {
-					return;
-				},
 				getType: function() {
 					return 'model';
 				}
 			};
-			_m.extend(modelProto, givenProto);
+			$.extend(modelProto, givenProto);
 			_m.availableModels[modelName].prototype = modelProto;
 		}
 	};
@@ -199,7 +245,13 @@ var uri = {};
 				isStarted: function() {
 					return false;
 				},
+				beforeStop: function() {
+					return;
+				},
 				stop: function() {
+					return;
+				},
+				afterStop: function() {
 					return;
 				},
 				trigger: function(event, data) {
@@ -216,7 +268,7 @@ var uri = {};
 					_m.viewListeners[viewName][event][listenerId] = true;
 				}
 			};
-			_m.extend(viewProto, givenProto);
+			$.extend(viewProto, givenProto);
 			_m.availableViews[viewName].prototype = viewProto;
 		},
 		
@@ -255,15 +307,17 @@ var uri = {};
 				returnVal = false;
 			}
 			else {
+				view.beforeStop();
 				if (_m.debug) { _m.log('Stopping view ' + view.getName()); }
 				view.onStop();
-				delete view;
 				for (var event in _m.viewListeners[view.getName()]) {
 					for (var listenerId in _m.viewListeners[view.getName()][event]) {
 						_m.events.stopListener(event, listenerId);
 					}
 				}
 				delete _m.viewListeners[view.getName()];
+				view.afterStop();
+				delete view;
 				returnVal = true;
 			}
 			return returnVal;
@@ -298,7 +352,13 @@ var uri = {};
 				isStarted: function() {
 					return false;
 				},
+				beforeStop: function() {
+					return;
+				},
 				stop: function() {
+					return;
+				},
+				afterStop: function() {
 					return;
 				},
 				trigger: function(event, data) {
@@ -315,7 +375,7 @@ var uri = {};
 					_m.controllerListeners[controllerName][event][listenerId] = true;
 				}
 			};
-			_m.extend(controllerProto, givenProto);
+			$.extend(controllerProto, givenProto);
 			_m.availableControllers[controllerName].prototype = controllerProto;
 		},
 		
@@ -323,6 +383,8 @@ var uri = {};
 		// params: string controllerName, mixed options
 		// returns: controllerInstance
 		start: function(controllerName, options) {
+
+			_m.uriHelper.stateManager();
 			
 			if (!controllerName) {
 				controllerName = _m.router.findRoute(uri.asString());
@@ -358,6 +420,7 @@ var uri = {};
 				returnVal = false;
 			}
 			else {
+				controller.beforeStop();
 				if (_m.debug) { _m.log('Stopping controller ' + controller.getName()); }
 				controller.onStop();
 				for (var event in _m.controllerListeners[controller.getName()]) {
@@ -366,6 +429,7 @@ var uri = {};
 					}
 				}
 				delete _m.controllerListeners[controller.getName()];
+				controller.afterStop();
 				delete controller;
 				returnVal = true;
 			}
@@ -405,10 +469,28 @@ var uri = {};
 		// update the active URI
 		// params: string uri
 		// returns: bool
-		goTo: function(newUri) {
-			document.location.hash = newUri;
-			if (_m.debug) { _m.log('URI changed to ' + newUri); }
-			return true;
+		goTo: function(newUri, newState) {
+			if (!newState) {
+				var newState = {};
+			}
+			$.extend(_m.appState, newState);
+			if (_m.stateContainer === 'hash') {
+				document.location.hash = newUri;
+				if (_m.debug) { _m.log('URI changed to ' + newUri); }
+				return true;
+			}
+			else if (_m.stateContainer === 'history') {
+				if (history.pushState) {
+					history.pushState(_m.appState, _m.uriHelper.baseUri + newUri, _m.uriHelper.baseUri + newUri);
+					if (_m.debug) { _m.log('URI changed to ' + newUri); }
+					_m.uriHelper.stateChange();
+					controllers.start();
+					return true;
+				}
+				else {
+					return false;
+				}
+			}
 		},
 		
 		// returns one URI segment
@@ -476,106 +558,43 @@ var uri = {};
 			return _m.uriHelper.segments;
 		},
 		
+		// set the base URI that is used for all further URI generations
+		// params: string baseUri
+		// returns: bool
+		setBase: function(baseUri) {
+			_m.uriHelper.baseUri = (baseUri.substr(baseUri.length-1,1)==='/' ? baseUri.substr(0, baseUri.length-1) : baseUri);
+			return true;
+		},
+		
+		// returns the application State object
+		// params: 
+		// returns: mixed
+		getState: function() {
+			return _m.appState;
+		}
+		
 	};
 	
-	// self-executing anonymous function that initiates the URI object
-	(function() {
-		
-		// self-executing named function that updates the URI data
-		var updateURI = (
-			function() {
-				return function() {
-					_m.uriHelper.string = document.location.hash.toString().substr(1);
-					_m.uriHelper.segments = _m.uriHelper.string.split('/');
-				};
-			}
-		)();
-		
-		updateURI();
-		
-		// hash parameter listener function
-		_m.uriHelper.listener = setInterval(function() {
-			if (_m.uriHelper.string !== document.location.hash.toString().substr(1)) {
-				if (_m.debug) { _m.log('Hash listener found out about the new URI.'); }
-
-				updateURI();
-				_m.events.trigger('uri.change', {});
-				controllers.start();
-			}
-		}, 50);
-		
-	})();
-		
 	/*!
-	 * The extend function below is from
-	 * jQuery JavaScript Library v1.4.4
-	 * Copyright 2010, John Resig
-	 * Dual licensed under the MIT or GPL Version 2 licenses.
-	 * http://jquery.org/license	
+	 * jQuery Rest - Copyright TJ Holowaychuk <tj@vision-media.ca> (MIT Licensed) 
 	 */
-	this.extend = function() {
-		var options, name, src, copy, copyIsArray, clone,
-			target = arguments[0] || {},
-			i = 1,
-			length = arguments.length,
-			deep = false;
-	
-		// Handle a deep copy situation
-		if ( typeof target === "boolean" ) {
-			deep = target;
-			target = arguments[1] || {};
-			// skip the boolean and the target
-			i = 2;
+	(function($){
+		$.rest = $.json = { version : '1.1.0' }
+		$.json.post = $.create = function(uri, data, callback) {
+			return $.post(uri, data, callback, 'json')
 		}
-	
-		// Handle case when target is a string or something (possible in deep copy)
-		if ( typeof target !== "object" && !jQuery.isFunction(target) ) {
-			target = {};
+		$.json.get = $.read = function(uri, data, callback) {
+			return $.getJSON(uri, data, callback)
 		}
-	
-		// extend jQuery itself if only one argument is passed
-		if ( length === i ) {
-			target = this;
-			--i;
+		$.json.put = $.update = function(uri, data, callback) {
+			if ($.isFunction(data)) callback = data, data = {}
+			return $.post(uri, $.extend(data, { _method: 'put' }), callback, 'json')
 		}
-	
-		for ( ; i < length; i++ ) {
-			// Only deal with non-null/undefined values
-			if ( (options = arguments[ i ]) != null ) {
-				// Extend the base object
-				for ( name in options ) {
-					src = target[ name ];
-					copy = options[ name ];
-	
-					// Prevent never-ending loop
-					if ( target === copy ) {
-						continue;
-					}
-	
-					// Recurse if we're merging plain objects or arrays
-					if ( deep && copy && ( jQuery.isPlainObject(copy) || (copyIsArray = jQuery.isArray(copy)) ) ) {
-						if ( copyIsArray ) {
-							copyIsArray = false;
-							clone = src && jQuery.isArray(src) ? src : [];
-	
-						} else {
-							clone = src && jQuery.isPlainObject(src) ? src : {};
-						}
-	
-						// Never move original objects, clone them
-						target[ name ] = jQuery.extend( deep, clone, copy );
-	
-					// Don't bring in undefined values
-					} else if ( copy !== undefined ) {
-						target[ name ] = copy;
-					}
-				}
-			}
+		$.json.del = $.del = $.destroy = function(uri, data, callback) {
+			if ($.isFunction(data)) callback = data, data = {}
+			return $.post(uri, $.extend(data, { _method: 'delete' }), callback, 'json')
 		}
-	
-		// Return the modified object
-		return target;
-	};
+	})(jQuery);
 	
 	// the welcomeController (only executed when there are no routes defined)
 	controllers.add(_m.welcomeControllerName, function() {}, {
@@ -655,6 +674,6 @@ var uri = {};
 			this.box.remove();
 		}
 	});
-
+	
 }());
 
