@@ -5,7 +5,7 @@ Maverick is right for you if...
 
 * You want a framework with a small footprint.
 * You need exceptional performance.
-* You need broad compatibility with standard hosting accounts that run a variety of Javascript libraries (such as jQuery, Prototype, YUI).
+* You need broad compatibility with all different Javascript libraries (jQuery, Prototype, YUI, you name it).
 * You want a framework that requires nearly zero configuration.
 * You want a framework that applies strict variable scoping and access policies.
 * You want a framework that does not require you to adhere to restrictive coding rules.
