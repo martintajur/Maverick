@@ -162,14 +162,6 @@ var uri = {};
 			};
 			_m.extend(modelProto, givenProto);
 			_m.models[modelName].prototype = modelProto;
-		},
-		
-		start: function(modelName, options) {
-			// to do: start a model
-		},
-		
-		stop: function(modelName, options) {
-			// to do: stop a model
 		}
 	};
 	
