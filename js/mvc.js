@@ -1,5 +1,5 @@
 /*!
-Maverick - the Javascript-based Model-View-Controller rapid web application development framework
+Maverick - the Javascript-based Model-View-Controller web application framework
 Copyright (c) 2010 Martin Tajur (martin.tajur@gmail.com)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,7 +22,7 @@ THE SOFTWARE.
 */
 
 
-// the only globally scoped variables
+// the only globally scoped variables are:
 var models = {};
 var views = {};
 var controllers = {};
@@ -31,7 +31,7 @@ var uri = {};
 
 (function() {
 	
-	// enable/disable debugging
+	// enable/disable internal debugging
 	this.debug = true; 
 	
 	// internal logger
@@ -494,7 +494,7 @@ var uri = {};
 				if (_m.debug) _m.log('Hash listener found out about the new URI.');
 
 				updateURI();
-				_m.events.trigger('url', {});
+				_m.events.trigger('uri.change', {});
 				controllers.start();
 			}
 		}, 50);

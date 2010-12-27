@@ -2,18 +2,22 @@
 
 	controllers.add('article', function() {
 		
+		// This here is the constructor function for this controller.
+		// In here we just define some default locally scoped variables that we will use later on.
+		
 		this.author = 'Steve McGriffin';
 		this.articleOne;
 		this.articleTwo;
-		this.timeouts = [];
+		this.timeouts = {};
 		
 	}, {
 	
 		onStart: function() {
 			
-			// This is an example controller that publishes two articles and then removes them.
-			// the first article is published through event handler, the second one is published
-			// directly.
+			// This is an example controller that publishes two articles and then removes them from the DOM.
+			// The first article is published through event handler, the second one is published
+			// directly with a timeout. The timeouts are stored internally within this.timeouts object for
+			// clearing upon "uri.change" event.
 			
 			var that = this;
 			
@@ -21,10 +25,10 @@
 				that.articleOne = views.start('article', data);
 			};
 
-			this.listen('publishArticleOne', launchArticleOne);
+			this.listen('publish.articleOne', launchArticleOne);
 			
 			this.timeouts[0] = setTimeout(function() {
-				that.trigger('publishArticleOne', {
+				that.trigger('publish.articleOne', {
 					title: 'European Broadband-Internet Satellite Launched',
 					content: "A new satellite that promises to bring broadband Internet to homes and businesses across Europe and the Mediterranean was successfully launched on Sunday from the Baikonur Cosmodrome in Kazakhstan.",
 					author: that.author
@@ -55,19 +59,18 @@
 				uri.goTo('/');
 			}, 8000);
 
-			this.listen('url', function() {
-				if (that.articleOne) that.articleOne.stop();
-				if (that.articleTwo) that.articleTwo.stop();
-				for (var key in that.timeouts) {
-					clearTimeout(that.timeouts[key]);
-				}
-				delete that.timeouts;
+			this.listen('uri.change', function() {
 				that.stop();
 			});
 		},
 		
 		onStop: function() {
-			
+			if (this.articleOne) this.articleOne.stop();
+			if (this.articleTwo) this.articleTwo.stop();
+			for (var key in this.timeouts) {
+				clearTimeout(this.timeouts[key]);
+			}
+			delete this.timeouts;
 		}
 		
 	});
