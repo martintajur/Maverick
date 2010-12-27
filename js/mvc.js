@@ -117,7 +117,7 @@ var uri = {};
 	// return: string (relevant controller name)
 	this.router.findRoute = function(givenUri) {
 		var returnVal = false;
-		if (_m.debug) _m.log('Finding route for ' + givenUri);
+		if (_m.debug) { _m.log('Finding route for ' + givenUri); }
 		for (var key in _m.activeRoutes) {
 			if (givenUri === '') {
 				if (key === '/') {
@@ -127,7 +127,7 @@ var uri = {};
 			else {
 				if (givenUri.toString().match(new RegExp('^' + key.replace('/','\/') + '$'))) {
 					returnVal = _m.activeRoutes[key];
-					if (_m.debug) _m.log('Found route for ' + givenUri + '. The route is ' + _m.activeRoutes[key]);
+					if (_m.debug) { _m.log('Found route for ' + givenUri + '. The route is ' + _m.activeRoutes[key]); }
 				}
 			}
 		}
@@ -139,7 +139,7 @@ var uri = {};
 		// adds a new model
 		// params: string modelName , function construct, object givenProto
 		add: function(modelName, construct, givenProto) {
-			if (_m.debug) _m.log('Adding model ' + modelName);
+			if (_m.debug) { _m.log('Adding model ' + modelName); }
 			if (_m.availableModels[modelName]) {
 				throw new Error('Model ' + modelName + ' is already present.');
 				return;
@@ -170,7 +170,7 @@ var uri = {};
 		// adds a new view
 		// params: string viewName, function construct, object givenProto
 		add: function(viewName, construct, givenProto) {
-			if (_m.debug) _m.log('Adding view ' + viewName);
+			if (_m.debug) { _m.log('Adding view ' + viewName); }
 			if (_m.availableViews[viewName]) {
 				throw new Error('View ' + viewName + ' is already present.');
 				return;
@@ -218,10 +218,9 @@ var uri = {};
 		// params: string viewName, object options
 		// returns: viewInstance
 		start: function(viewName, options) {
-			if (_m.debug) _m.log('Starting view ' + viewName, options);
+			if (_m.debug) { _m.log('Starting view ' + viewName, options); }
 			if (!_m.availableViews[viewName]) {
 				throw new Error('Unable to start view ' + viewName + ' - undefined.');
-				return false;
 			}
 			var _view = new _m.availableViews[viewName];
 			_view.isStarted = function() { return true; };
@@ -250,7 +249,7 @@ var uri = {};
 				returnVal = false;
 			}
 			else {
-				if (_m.debug) _m.log('Stopping view ' + view.getName());
+				if (_m.debug) { _m.log('Stopping view ' + view.getName()); }
 				view.onStop();
 				delete view;
 				for (var event in _m.viewListeners[view.getName()]) {
@@ -270,7 +269,7 @@ var uri = {};
 		// adds a new controller
 		// params: string controllerName, function construct, object givenProto
 		add: function(controllerName, construct, givenProto) {
-			if (_m.debug) _m.log('Adding controller ' + controllerName);
+			if (_m.debug) { _m.log('Adding controller ' + controllerName); }
 			if (_m.availableControllers[controllerName]) {
 				throw new Error('Controller ' + controllerName + ' already present.');
 				return;
@@ -327,7 +326,7 @@ var uri = {};
 				return;
 			}
 			
-			if (_m.debug) _m.log('Starting controller ' + controllerName);
+			if (_m.debug) { _m.log('Starting controller ' + controllerName); }
 			if (!_m.availableControllers[controllerName]) {
 				throw new Error('Unable to start controller ' + controllerName + ' - undefined.');
 				return false;
@@ -353,7 +352,7 @@ var uri = {};
 				returnVal = false;
 			}
 			else {
-				if (_m.debug) _m.log('Stopping controller ' + controller.getName());
+				if (_m.debug) { _m.log('Stopping controller ' + controller.getName()); }
 				controller.onStop();
 				for (var event in _m.controllerListeners[controller.getName()]) {
 					for (var listenerId in _m.controllerListeners[controller.getName()][event]) {
@@ -375,7 +374,7 @@ var uri = {};
 		// returns bool
 		add: function(options) {
 			for (var key in options) {
-				if (_m.debug) _m.log('Adding route for ' + key + ': ' + options[key]);
+				if (_m.debug) { _m.log('Adding route for ' + key + ': ' + options[key]); }
 				_m.activeRoutes[key] = options[key];
 			}
 			return true;
@@ -402,7 +401,7 @@ var uri = {};
 		// returns: bool
 		goTo: function(newUri) {
 			document.location.hash = newUri;
-			if (_m.debug) _m.log('URI changed to ' + newUri);
+			if (_m.debug) { _m.log('URI changed to ' + newUri); }
 			return true;
 		},
 		
@@ -491,7 +490,7 @@ var uri = {};
 		// hash parameter listener function
 		_m.uriHelper.listener = setInterval(function() {
 			if (_m.uriHelper.string !== document.location.hash.toString().substr(1)) {
-				if (_m.debug) _m.log('Hash listener found out about the new URI.');
+				if (_m.debug) { _m.log('Hash listener found out about the new URI.'); }
 
 				updateURI();
 				_m.events.trigger('uri.change', {});
