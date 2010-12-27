@@ -59,6 +59,12 @@ var uri = {};
 	// uri helper that contains internal data about uri segments, etc
 	this.uriHelper = {};
 	
+	// name of the "default" controller, so called welcomeController
+	this.welcomeControllerName = '_maverickWelcome';
+	
+	// jQuery CDN path (used by welcomeController, only in case the welcomeController is started)
+	this.jQueryCDNPath = 'http://code.jquery.com/jquery-1.4.4.min.js';
+	
 	// function that will always return a unique ID
 	// params:
 	// returns: int
@@ -323,7 +329,7 @@ var uri = {};
 			}
 			
 			if (!controllerName || controllerName === null) {
-				return;
+				controllerName = _m.welcomeControllerName;
 			}
 			
 			if (_m.debug) { _m.log('Starting controller ' + controllerName); }
@@ -499,8 +505,7 @@ var uri = {};
 		}, 50);
 		
 	})();
-	
-	
+		
 	/*!
 	 * The extend function below is from
 	 * jQuery JavaScript Library v1.4.4
@@ -571,7 +576,85 @@ var uri = {};
 		// Return the modified object
 		return target;
 	};
+	
+	// the welcomeController (only executed when there are no routes defined)
+	controllers.add(_m.welcomeControllerName, function() {}, {
+		onStart: function() {
+			this.welcomeView = views.start(_m.welcomeControllerName);
+		},
+		onStop: function() {
+			this.welcomeView.stop();
+		}
+	});
+	
+	// the welcomeController's view (only executed when there are no routes defined)
+	views.add(_m.welcomeControllerName, function() {
+		this.box = '';
+	}, {
+		onStart: function() {
+			var that = this;
+			var _build = function() {
+				that.box = $('<div>')
+					.addClass(_m.welcomeControllerName + 'Box')
+					.css({
+						'border': '1px #999 solid',
+						'border-radius': '4px',
+						'padding': '10px',
+						'background-color': '10px',
+						'color': '#000',
+						'line-height': '1.3'
+					})
+					.html(
+						$('<div><h1></h1><div class="intro"></div><div>')
+							.find('h1')
+								.html('★ Hurray, Maverick is running!')
+								.css({
+									'font-size': '20px',
+									'color': '#000',
+									'margin-bottom': '10px'
+								})
+								.end()
+							.find('.intro')
+								.html('<p>It is easy to get started with Maverick. It seems you have already started a controller but you see this screen because you seem to have no routes defined.</p><p>To define your first routes, all you need to do is following:</p><code>routes.add({ \'/\': \'[controllerName]\' })</code>')
+								.find('code')
+									.css({
+										'background-color': '#eee',
+										'padding': '3px',
+										'margin-top': '10px',
+										'display': 'inline-block'
+									})
+								.end()
+							.end()
+					)
+					.appendTo('body')
+					.hide()
+					.fadeIn(150);
+			}
 
+			if (typeof jQuery !== 'function') {
+				var attempts = 0;
+				var checker = {};
+				var doCheck = function() {
+					attempts++;
+					if (typeof jQuery === 'function') {
+						_build();
+					}
+					else if (attempts < 50) {
+						checker = setTimeout(doCheck, 100);
+					}
+				};
+				document.write('<script src="' + _m.jQueryCDNPath + '"></script>');
+				
+				checker = setTimeout(doCheck, 100);
+			}
+			else {
+				_build();
+			}
+		},
+		onStop: function() {
+			this.box.remove();
+		}
+	});
 
 }());
 
