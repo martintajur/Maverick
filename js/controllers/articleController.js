@@ -13,7 +13,11 @@
 	}, {
 	
 		onStart: function() {
-			
+
+			// Every controller has an onStart() and an onEnd() function.
+			// Everything that the controller creates in onStart() *should* be removed in onEnd()
+			// (the view instance is released from the memory upon stopping anyway).
+		
 			// This is an example controller that publishes two articles and then removes them from the DOM.
 			// The first article is published through event handler, the second one is published
 			// directly with a timeout. The timeouts are stored internally within this.timeouts object for

@@ -7,7 +7,7 @@
 	}, {
 		
 		// Some API client goodness is supposed to happen here...
-		// but models are coming soon :)
+		// but models are coming soon to Maverick :)
 		
 	});
 	
