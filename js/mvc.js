@@ -52,12 +52,12 @@ var uri = {};
 	this.activeRoutes = {};
 	
 	// all views, controllers, models are stored within these objects
-	this.views = {};
-	this.controllers = {};
-	this.models = {};
+	this.availableViews = {};
+	this.availableControllers = {};
+	this.availableModels = {};
 	
 	// uri helper that contains internal data about uri segments, etc
-	this.uri = {};
+	this.uriHelper = {};
 	
 	// function that will always return a unique ID
 	// params:
@@ -140,11 +140,11 @@ var uri = {};
 		// params: string modelName , function construct, object givenProto
 		add: function(modelName, construct, givenProto) {
 			if (_m.debug) _m.log('Adding model ' + modelName);
-			if (_m.models[modelName]) {
+			if (_m.availableModels[modelName]) {
 				throw new Error('Model ' + modelName + ' is already present.');
 				return;
 			}
-			_m.models[modelName] = construct;
+			_m.availableModels[modelName] = construct;
 			
 			var modelProto = {
 				getName: function() {
@@ -161,7 +161,7 @@ var uri = {};
 				}
 			};
 			_m.extend(modelProto, givenProto);
-			_m.models[modelName].prototype = modelProto;
+			_m.availableModels[modelName].prototype = modelProto;
 		}
 	};
 	
@@ -171,11 +171,11 @@ var uri = {};
 		// params: string viewName, function construct, object givenProto
 		add: function(viewName, construct, givenProto) {
 			if (_m.debug) _m.log('Adding view ' + viewName);
-			if (_m.views[viewName]) {
+			if (_m.availableViews[viewName]) {
 				throw new Error('View ' + viewName + ' is already present.');
 				return;
 			}
-			_m.views[viewName] = construct;
+			_m.availableViews[viewName] = construct;
 	
 			var viewProto = {
 				getName: function() {
@@ -211,7 +211,7 @@ var uri = {};
 				}
 			};
 			_m.extend(viewProto, givenProto);
-			_m.views[viewName].prototype = viewProto;
+			_m.availableViews[viewName].prototype = viewProto;
 		},
 		
 		// starts a view
@@ -219,11 +219,11 @@ var uri = {};
 		// returns: viewInstance
 		start: function(viewName, options) {
 			if (_m.debug) _m.log('Starting view ' + viewName, options);
-			if (!_m.views[viewName]) {
+			if (!_m.availableViews[viewName]) {
 				throw new Error('Unable to start view ' + viewName + ' - undefined.');
 				return false;
 			}
-			var _view = new _m.views[viewName];
+			var _view = new _m.availableViews[viewName];
 			_view.isStarted = function() { return true; };
 			
 			for (var key in options) {
@@ -271,11 +271,11 @@ var uri = {};
 		// params: string controllerName, function construct, object givenProto
 		add: function(controllerName, construct, givenProto) {
 			if (_m.debug) _m.log('Adding controller ' + controllerName);
-			if (_m.controllers[controllerName]) {
+			if (_m.availableControllers[controllerName]) {
 				throw new Error('Controller ' + controllerName + ' already present.');
 				return;
 			}
-			_m.controllers[controllerName] = construct;
+			_m.availableControllers[controllerName] = construct;
 			
 			var controllerProto = {
 				getName: function() {
@@ -311,7 +311,7 @@ var uri = {};
 				}
 			};
 			_m.extend(controllerProto, givenProto);
-			_m.controllers[controllerName].prototype = controllerProto;
+			_m.availableControllers[controllerName].prototype = controllerProto;
 		},
 		
 		// starts a controller
@@ -328,11 +328,11 @@ var uri = {};
 			}
 			
 			if (_m.debug) _m.log('Starting controller ' + controllerName);
-			if (!_m.controllers[controllerName]) {
+			if (!_m.availableControllers[controllerName]) {
 				throw new Error('Unable to start controller ' + controllerName + ' - undefined.');
 				return false;
 			}
-			var _controller = new _m.controllers[controllerName];
+			var _controller = new _m.availableControllers[controllerName];
 			_controller.isStarted = function() { return true; };
 
 			_controller.stop = function() {
@@ -410,7 +410,7 @@ var uri = {};
 		// params: int i
 		// returns: string
 		getSegment: function(i) {
-			return _m.uri.segments[i+1];
+			return _m.uriHelper.segments[i+1];
 		},
 
 		// returns multiple URI segments, joined with /
@@ -421,7 +421,7 @@ var uri = {};
 			if (start <= end) {
 				start++;
 				end++;
-				returnVal = _m.uri.segments;
+				returnVal = _m.uriHelper.segments;
 				returnVal = returnVal.splice(start, end - start);
 			}
 			return returnVal;
@@ -432,8 +432,8 @@ var uri = {};
 		// returns: object
 		asObj: function(offset) {
 			var returnVal = {};
-			for (var i = 0; i < _m.uri.segments.length; i++) {
-				returnVal[_m.uri.segments[i]] = _m.uri.segments[i+1]
+			for (var i = 0; i < _m.uriHelper.segments.length; i++) {
+				returnVal[_m.uriHelper.segments[i]] = _m.uriHelper.segments[i+1]
 				i = i + 2;
 			}
 			return returnVal;
@@ -454,21 +454,21 @@ var uri = {};
 		// params: 
 		// returns: string
 		asString: function() {
-			return _m.uri.segments.join('/');
+			return _m.uriHelper.segments.join('/');
 		},
 
 		// returns the number of URI segments in total
 		// params: 
 		// returns: int
 		getTotalSegments: function() {
-			return _m.uri.segments.length;
+			return _m.uriHelper.segments.length;
 		},
 
 		// returns the segments as array
 		// params: 
 		// returns: array
 		asArray: function() {
-			return _m.uri.segments;
+			return _m.uriHelper.segments;
 		},
 		
 	};
@@ -480,8 +480,8 @@ var uri = {};
 		var updateURI = (
 			function() {
 				return function() {
-					_m.uri.string = document.location.hash.toString().substr(1);
-					_m.uri.segments = _m.uri.string.split('/');
+					_m.uriHelper.string = document.location.hash.toString().substr(1);
+					_m.uriHelper.segments = _m.uriHelper.string.split('/');
 				};
 			}
 		)();
@@ -489,8 +489,8 @@ var uri = {};
 		updateURI();
 		
 		// hash parameter listener function
-		_m.uri.listener = setInterval(function() {
-			if (_m.uri.string !== document.location.hash.toString().substr(1)) {
+		_m.uriHelper.listener = setInterval(function() {
+			if (_m.uriHelper.string !== document.location.hash.toString().substr(1)) {
 				if (_m.debug) _m.log('Hash listener found out about the new URI.');
 
 				updateURI();
