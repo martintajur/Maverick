@@ -6,7 +6,7 @@
 	
 	}, {
 		
-		getStories: function() {
+		getArticles: function() {
 			return {
 				0: {
 					title: 'European Broadband-Internet Satellite Launched',

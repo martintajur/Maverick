@@ -216,7 +216,7 @@ var uri = {};
 			_m.availableModels[modelName].prototype = modelProto;
 	
 			models[modelName] = new _m.availableModels[modelName]();
-			_model.isStarted = function() { return true; };
+			models[modelName].isStarted = function() { return true; };
 		}
 	};
 	
