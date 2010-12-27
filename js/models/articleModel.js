@@ -2,7 +2,7 @@
 
 	models.add('article', function() {
 	
-		this.server = 'api.griddd.com';
+		this.server = 'api.example.com';
 	
 	}, {
 		
