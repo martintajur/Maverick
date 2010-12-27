@@ -222,7 +222,7 @@ var uri = {};
 			if (!_m.availableViews[viewName]) {
 				throw new Error('Unable to start view ' + viewName + ' - undefined.');
 			}
-			var _view = new _m.availableViews[viewName];
+			var _view = new _m.availableViews[viewName](options);
 			_view.isStarted = function() { return true; };
 			
 			for (var key in options) {
@@ -331,7 +331,7 @@ var uri = {};
 				throw new Error('Unable to start controller ' + controllerName + ' - undefined.');
 				return false;
 			}
-			var _controller = new _m.availableControllers[controllerName];
+			var _controller = new _m.availableControllers[controllerName](options);
 			_controller.isStarted = function() { return true; };
 
 			_controller.stop = function() {
