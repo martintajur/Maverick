@@ -1,10 +1,6 @@
 (function() {
 
-	models.add('article', function() {
-	
-		this.mode = 'static';
-	
-	}, {
+	models.add('article', function() {}, {
 		
 		getArticles: function() {
 			return {
