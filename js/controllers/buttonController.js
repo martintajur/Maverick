@@ -14,6 +14,8 @@
 			
 			var that = this;
 			
+			document.title = 'Welcome to Maverick';
+			
 			// Start the button view
 			this.demoView = views.start('button');
 			

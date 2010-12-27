@@ -25,6 +25,8 @@
 			
 			var that = this;
 			
+			document.title = 'Articles';
+			
 			var launchArticleOne = function(data) {
 				that.articleOne = views.start('article', data);
 			};
