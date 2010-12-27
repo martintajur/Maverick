@@ -15,8 +15,10 @@
 		
 		<script type="text/javascript">
 			$(function() {
-				routes.add({'/': 'demo'});
-				routes.add({'/articles': 'article'});
+				routes.add({
+					'/': 'demo',
+					'/articles': 'article'
+				});
 				controllers.start();
 			});
 		</script>
