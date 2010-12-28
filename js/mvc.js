@@ -117,25 +117,25 @@ var uri = {};
 			
 			if (_m.stateContainer === 'hash') {
 				// hash parameter listener function
-				_m.uriHelper.listener = setInterval(function() {
+				window.onhashchange = function() {
 					if (_m.uriHelper.string !== document.location.hash.toString().substr(1)) {
 						if (_m.debug) { _m.log('Hash listener found out about the new URI.'); }
 		
 						_m.uriHelper.stateChange();
 						controllers.start();
 					}
-				}, 50);
+				};
 			}
 			else if (_m.stateContainer === 'history') {
-				// hash parameter listener function
-				_m.uriHelper.listener = setInterval(function() {
+				// popState change listener function
+				window.onpopstate = function() {
 					if (_m.uriHelper.string !== document.location.href.toString().replace(_m.uriHelper.baseUri, '')) {
 						if (_m.debug) { _m.log('History listener found out about the new URI.'); }
 		
 						_m.uriHelper.stateChange();
 						controllers.start();
 					}
-				}, 50);
+				};
 			}
 		}
 		_m.uriHelper._stateManagerRunning = true;
