@@ -10,7 +10,7 @@ Maverick is right for you if...
 * You want a framework that applies strict variable scoping and access policies.
 * You want a framework that does not require you to adhere to restrictive coding rules.
 
-The Maverick produces 5 globally scoped variables:
+5 globally scoped variables
 --------------------------------------------------
 
 * models
