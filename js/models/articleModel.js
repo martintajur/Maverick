@@ -3,6 +3,12 @@
 	models.add('article', function() {}, {
 		
 		getArticles: function() {
+			
+			// This is a dummy model function that simply returns an object containing articles data.
+			// In real world you probably need to provide an argument to model functions to ask for
+			// specific articles/items. The model could then communicate with an API to fetch real
+			// data from the server.
+			
 			return {
 				0: {
 					title: 'European Broadband-Internet Satellite Launched',

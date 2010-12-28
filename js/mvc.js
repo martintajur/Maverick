@@ -174,7 +174,10 @@ var uri = {};
 	// params: string uri
 	// return: string (relevant controller name)
 	this.router.findRoute = function(givenUri) {
-		var returnVal = false;
+		var returnVal = false, uriToMatch;
+		if (givenUri.substr(givenUri.length-1, 1) === '/') {
+			givenUri = givenUri.substr(0, givenUri.length-1);
+		}
 		if (_m.debug) { _m.log('Finding route for ' + givenUri); }
 		for (var key in _m.activeRoutes) {
 			if (givenUri === '') {
@@ -183,7 +186,12 @@ var uri = {};
 				}
 			}
 			else {
-				if (givenUri.toString().match(new RegExp('^' + key.replace('/','\/') + '$'))) {
+				uriToMatch = key;
+				if (uriToMatch.substr(uriToMatch.length-1, 1) === '/') {
+					uriToMatch = uriToMatch.substr(0, uriToMatch.length-1);
+				}
+				uriToMatch = uriToMatch.replace('/','\/');
+				if (givenUri.toString().match(new RegExp('^' + uriToMatch + '$'))) {
 					returnVal = _m.activeRoutes[key];
 					if (_m.debug) { _m.log('Found route for ' + givenUri + '. The route is ' + _m.activeRoutes[key]); }
 				}

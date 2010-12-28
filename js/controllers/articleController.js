@@ -33,6 +33,10 @@
 			this.listen('publish.articleOne', launchArticleOne);
 			
 			this.articles = models.article.getArticles();
+			// To do: think about ways to make API calls from the model asynchronous, so the line above
+			// might change based on what solution I will land on. The problem is that most API calls
+			// are handled with an XHR request that takes time to get an answer to, so there must be a
+			// way to delay returning of the data from the model to the controller...
 			
 			this.timeouts[0] = setTimeout(function() {
 				that.trigger('publish.articleOne', that.articles[0]);
