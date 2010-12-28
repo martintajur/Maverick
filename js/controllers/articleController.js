@@ -32,35 +32,33 @@
 
 			this.listen('publish.articleOne', launchArticleOne);
 			
-			this.articles = models.article.getArticles();
-			// To do: think about ways to make API calls from the model asynchronous, so the line above
-			// might change based on what solution I will land on. The problem is that most API calls
-			// are handled with an XHR request that takes time to get an answer to, so there must be a
-			// way to delay returning of the data from the model to the controller...
-			
-			this.timeouts[0] = setTimeout(function() {
-				that.trigger('publish.articleOne', that.articles[0]);
-			}, 1000);
-			
-			this.timeouts[1] = setTimeout(function() {
-				that.articleTwo = views.start('article', that.articles[1]);
-			}, 2000);
-			
-			this.timeouts[2] = setTimeout(function() {
-				that.articleTwo.stop();
-			}, 5000);
+			models.article.getArticles(function(articles) {
+				
+				that.timeouts[0] = setTimeout(function() {
+					that.trigger('publish.articleOne', articles[0]);
+				}, 1000);
+				
+				that.timeouts[1] = setTimeout(function() {
+					that.articleTwo = views.start('article', articles[1]);
+				}, 2000);
+				
+				that.timeouts[2] = setTimeout(function() {
+					that.articleTwo.stop();
+				}, 5000);
+	
+				that.timeouts[3] = setTimeout(function() {
+					that.articleOne.stop();
+				}, 6000);
+	
+				that.timeouts[4] = setTimeout(function() {
+					uri.goTo('/');
+					that.stop();
+				}, 7000);
+	
+				that.listen('uri.change', function() {
+					that.stop();
+				});					
 
-			this.timeouts[3] = setTimeout(function() {
-				that.articleOne.stop();
-			}, 6000);
-
-			this.timeouts[4] = setTimeout(function() {
-				uri.goTo('/');
-				that.stop();
-			}, 7000);
-
-			this.listen('uri.change', function() {
-				that.stop();
 			});
 		},
 		

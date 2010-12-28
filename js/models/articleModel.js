@@ -2,25 +2,12 @@
 
 	models.add('article', function() {}, {
 		
-		getArticles: function() {
+		getArticles: function(callback) {
 			
-			// This is a dummy model function that simply returns an object containing articles data.
-			// In real world you probably need to provide an argument to model functions to ask for
-			// specific articles/items. The model could then communicate with an API to fetch real
-			// data from the server.
+			// This is a dummy model function that simply fetches articles stored in a .json file
+			// on the server, and then returns the JSON object to the callback function.
 			
-			return {
-				0: {
-					title: 'European Broadband-Internet Satellite Launched',
-					content: "A new satellite that promises to bring broadband Internet to homes and businesses across Europe and the Mediterranean was successfully launched on Sunday from the Baikonur Cosmodrome in Kazakhstan.",
-					author: 'Steve McGriffin'
-				},
-				1: {
-					title: 'Study ties brain structure size to socializing ',
-					content: "NEW YORK (AP) - Do you spend time with a lot of friends? That might mean a particular part of your brain is larger than usual. It's the amygdala, which lies deep inside.",
-					author: 'Steve McGriffin'
-				}
-			}
+			$.getJSON('../demo/articles.json', callback);
 		}
 		
 	});

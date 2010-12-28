@@ -54,8 +54,9 @@ var uri = {};
 	// router is used to determine which controller to start based on URI
 	this.router = {};
 	
-	// routes object will contain all active routes
-	this.activeRoutes = {};
+	// routes array will contain all active routes
+	// the array is structured in a way that each item inside is an object, containing 'source' and 'destination' items
+	this.activeRoutes = [];
 	
 	// all views, controllers, models are stored within these objects
 	this.availableViews = {};
@@ -86,10 +87,24 @@ var uri = {};
 		}
 	)();
 	
-	this.uriHelper._stateManagerRunning = false;
+	// prototype global objects
+	
+	// function that removes trailing slash from any string
+	if (!String.prototype.removeTrailingSlash) {
+		String.prototype.removeTrailingSlash = function() {
+			var returnVal = this;
+			if (this.substr(this.length-1, 1) === '/') {
+				returnVal = this.substr(0, this.length-1);
+			}
+			return returnVal;
+		}
+	}
 
 	// internal reference within the main function to itself
 	var _m = this;
+
+	// state manager status
+	this.uriHelper._stateManagerRunning = false;
 	
 	// self-executing anonymous function that initiates the URI object
 	this.uriHelper.stateManager = function() {
@@ -175,25 +190,18 @@ var uri = {};
 	// return: string (relevant controller name)
 	this.router.findRoute = function(givenUri) {
 		var returnVal = false, uriToMatch;
-		if (givenUri.substr(givenUri.length-1, 1) === '/') {
-			givenUri = givenUri.substr(0, givenUri.length-1);
-		}
+		givenUri = givenUri.removeTrailingSlash();
 		if (_m.debug) { _m.log('Finding route for ' + givenUri); }
 		for (var key in _m.activeRoutes) {
 			if (givenUri === '') {
-				if (key === '/') {
-					returnVal = _m.activeRoutes[key];
+				if (_m.activeRoutes[key].source === '/') {
+					returnVal = _m.activeRoutes[key].destination;
 				}
 			}
 			else {
-				uriToMatch = key;
-				if (uriToMatch.substr(uriToMatch.length-1, 1) === '/') {
-					uriToMatch = uriToMatch.substr(0, uriToMatch.length-1);
-				}
-				uriToMatch = uriToMatch.replace('/','\/');
-				if (givenUri.toString().match(new RegExp('^' + uriToMatch + '$'))) {
-					returnVal = _m.activeRoutes[key];
-					if (_m.debug) { _m.log('Found route for ' + givenUri + '. The route is ' + _m.activeRoutes[key]); }
+				if (givenUri.toString().match(new RegExp('^' + _m.activeRoutes[key].source.toString().removeTrailingSlash().replace('/','\/') + '$'))) {
+					returnVal = _m.activeRoutes[key].destination;
+					if (_m.debug) { _m.log('Found route for ' + givenUri + '. The route is ' + _m.activeRoutes[key].destination); }
 				}
 			}
 		}
@@ -456,7 +464,7 @@ var uri = {};
 		add: function(options) {
 			for (var key in options) {
 				if (_m.debug) { _m.log('Adding route for ' + key + ': ' + options[key]); }
-				_m.activeRoutes[key] = options[key];
+				_m.activeRoutes.push({ source: key, destination: options[key] });
 			}
 			return true;
 		},
@@ -464,14 +472,17 @@ var uri = {};
 		// removes a route
 		// params: string source
 		remove: function(source) {
-			if (!_m.activeRoutes[source]) {
+			var returnVal = false;
+			for (var key in _m.activeRoutes) {
+				if (_m.activeRoutes[key].source === source) {
+					delete _m.activeRoutes[key];
+					returnVal = true;
+				}
+			}
+			if (returnVal === false) {
 				throw new Error('Unable to remove a route ' + source + ' - route does not exist.');
-				return false;
 			}
-			else {
-				delete _m.activeRoutes[source];
-				return true;
-			}
+			return returnVal;
 		}
 	};
 	
@@ -575,7 +586,7 @@ var uri = {};
 		// params: string baseUri
 		// returns: bool
 		setBase: function(baseUri) {
-			_m.uriHelper.baseUri = (baseUri.substr(baseUri.length-1,1)==='/' ? baseUri.substr(0, baseUri.length-1) : baseUri);
+			_m.uriHelper.baseUri = baseUri.removeTrailingSlash();
 			return true;
 		},
 		
@@ -649,7 +660,7 @@ var uri = {};
 								})
 								.end()
 							.find('.intro')
-								.html('<p>It seems you have already started the application using <code>controllers.start();</code> but you see this screen because you seem to have no routes defined.</p><p>To define your first route, you need to do the following:</p><code>routes.add({ \'/\': \'<span style="color:#800;">[controllerName]</span>\' });</code>')
+								.html('<p>It seems you have already started the application using <code>controllers.start();</code> but you see this screen either because you have no routes defined, or you are trying to reach a route that was not defined.</p><p>To define your first route, you need to do the following:</p><code>routes.add({ \'/\': \'<span style="color:#800;">[controllerName]</span>\' });</code>')
 								.find('code')
 									.css({
 										'background-color': '#eee',
