@@ -32,34 +32,37 @@
 
 			this.listen('publish.articleOne', launchArticleOne);
 			
-			models.article.getArticles(function(articles) {
+			models.article.getArticles({some: 'param',someOther: 'param2'}, function(articles, someRandomStuff) {
 				
-				that.timeouts[0] = setTimeout(function() {
-					that.trigger('publish.articleOne', articles[0]);
-				}, 1000);
-				
-				that.timeouts[1] = setTimeout(function() {
-					that.articleTwo = views.start('article', articles[1]);
-				}, 2000);
-				
-				that.timeouts[2] = setTimeout(function() {
-					that.articleTwo.stop();
-				}, 5000);
-	
-				that.timeouts[3] = setTimeout(function() {
-					that.articleOne.stop();
-				}, 6000);
-	
-				that.timeouts[4] = setTimeout(function() {
-					uri.goTo('/');
-					that.stop();
-				}, 7000);
-	
-				that.listen('uri.change', function() {
-					that.stop();
-				});					
+					console.log(arguments);
+					
+					that.timeouts[0] = setTimeout(function() {
+						that.trigger('publish.articleOne', articles[0]);
+					}, 1000);
+					
+					that.timeouts[1] = setTimeout(function() {
+						that.articleTwo = views.start('article', articles[1]);
+					}, 2000);
+					
+					that.timeouts[2] = setTimeout(function() {
+						that.articleTwo.stop();
+					}, 5000);
+		
+					that.timeouts[3] = setTimeout(function() {
+						that.articleOne.stop();
+					}, 6000);
+		
+					that.timeouts[4] = setTimeout(function() {
+						uri.goTo('/');
+						that.stop();
+					}, 7000);
+		
+					that.listen('uri.change', function() {
+						that.stop();
+					});					
 
-			});
+				}
+			);
 		},
 		
 		removeElements: function() {

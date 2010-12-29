@@ -99,6 +99,13 @@ var uri = {};
 			return returnVal;
 		}
 	}
+	
+	// function that retrieves the last item in array
+	if (!Array.prototype.last) {
+		Array.prototype.last = function() {
+			return this[this.length-1];
+		}
+	}
 
 	// internal reference within the main function to itself
 	var _m = this;
@@ -193,15 +200,18 @@ var uri = {};
 		givenUri = givenUri.removeTrailingSlash();
 		if (_m.debug) { _m.log('Finding route for ' + givenUri); }
 		for (var key in _m.activeRoutes) {
-			if (givenUri === '') {
-				if (_m.activeRoutes[key].source === '/') {
-					returnVal = _m.activeRoutes[key].destination;
+			if (_m.activeRoutes.hasOwnProperty(key)) {
+				if (givenUri === '') {
+					if (_m.activeRoutes[key].source === '/') {
+						returnVal = _m.activeRoutes[key].destination;
+					}
 				}
-			}
-			else {
-				if (givenUri.toString().match(new RegExp('^' + _m.activeRoutes[key].source.toString().removeTrailingSlash().replace('/','\/') + '$'))) {
-					returnVal = _m.activeRoutes[key].destination;
-					if (_m.debug) { _m.log('Found route for ' + givenUri + '. The route is ' + _m.activeRoutes[key].destination); }
+				else {
+					console.log(_m.activeRoutes[key].source);
+					if (givenUri.toString().match(new RegExp('^' + _m.activeRoutes[key].source.toString().removeTrailingSlash().replace('/','\/') + '$'))) {
+						returnVal = _m.activeRoutes[key].destination;
+						if (_m.debug) { _m.log('Found route for ' + givenUri + '. The route is ' + _m.activeRoutes[key].destination); }
+					}
 				}
 			}
 		}
@@ -210,7 +220,7 @@ var uri = {};
 	
 	models = {
 	
-		// adds a new model
+		// adds a new model, instantiates it and extends its functions with wrapper functions
 		// params: string modelName , function construct, object givenProto
 		add: function(modelName, construct, givenProto) {
 			if (_m.debug) { _m.log('Adding model ' + modelName); }
@@ -230,9 +240,60 @@ var uri = {};
 			};
 			$.extend(modelProto, givenProto);
 			_m.availableModels[modelName].prototype = modelProto;
-	
-			models[modelName] = new _m.availableModels[modelName]();
-			models[modelName].isStarted = function() { return true; };
+			
+			var modelInstance = new _m.availableModels[modelName]();
+			modelInstance.isStarted = function() { return true; };
+			
+			models[modelName] = {};
+			
+			for (var key in modelProto) {
+				(function(currentKey) {
+					models[modelName][currentKey] = function(params, callback) {
+						modelInstance[currentKey](params, callback);
+						
+						return {
+							methodName: currentKey,
+							method: modelInstance[currentKey],
+							params: params,
+							callback: callback
+						};
+					};
+				}(key));
+			}
+		},
+		
+		// function that handles retrieving data from multiple models simultaneously
+		// params: function [model method], function [model method], ..., function [callback function]
+		// returns mixed [response data], mixed [response data], mixed [response data], ...
+		getMany: function() {
+			var args = [].slice.call(arguments); // turns the arguments object into an array
+
+			var callsTotal = args.length - 1;
+			var finishedCalls = 0;
+			var finalCallbackArguments = [];
+			
+			// function that handles all callbacks from model functions
+			var multipleModelHandler = function() {
+				
+				// count how many models have sent their responses...
+				finishedCalls++;
+				
+				// ...push the arguments provided by the models to a single array...
+				finalCallbackArguments.push(arguments[0]);
+				
+				// ...and if all models have finished then...
+				if (finishedCalls === callsTotal) {
+					// ..call the initial callback function with all arguments stacked together
+					args.last().apply(null, finalCallbackArguments);
+				}
+			};
+			
+			// loop through the given arguments
+			for (var key in args) {
+				if (key != (args.length-1) && args.hasOwnProperty(key)) {
+					args[key].method(args[key].params, multipleModelHandler);
+				}
+			}
 		}
 	};
 	
@@ -600,28 +661,7 @@ var uri = {};
 	};
 	
 	uri.setBase(document.location.href);
-	
-	/*!
-	 * jQuery Rest - Copyright TJ Holowaychuk <tj@vision-media.ca> (MIT Licensed) 
-	 */
-	(function($){
-		$.rest = $.json = { version : '1.1.0' }
-		$.json.post = $.create = function(uri, data, callback) {
-			return $.post(uri, data, callback, 'json')
-		}
-		$.json.get = $.read = function(uri, data, callback) {
-			return $.getJSON(uri, data, callback)
-		}
-		$.json.put = $.update = function(uri, data, callback) {
-			if ($.isFunction(data)) callback = data, data = {}
-			return $.post(uri, $.extend(data, { _method: 'put' }), callback, 'json')
-		}
-		$.json.del = $.del = $.destroy = function(uri, data, callback) {
-			if ($.isFunction(data)) callback = data, data = {}
-			return $.post(uri, $.extend(data, { _method: 'delete' }), callback, 'json')
-		}
-	})(jQuery);
-	
+		
 	// the welcomeController (only executed when there are no routes defined)
 	controllers.add(_m.welcomeControllerName, function() {}, {
 		onStart: function() {
