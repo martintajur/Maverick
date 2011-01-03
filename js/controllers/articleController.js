@@ -32,10 +32,8 @@
 
 			this.listen('publish.articleOne', launchArticleOne);
 			
-			models.article.getArticles({some: 'param',someOther: 'param2'}, function(articles, someRandomStuff) {
-				
-					console.log(arguments);
-					
+			models.article.getArticles({some: 'param',someOther: 'param2'}, function(articles) {
+									
 					that.timeouts[0] = setTimeout(function() {
 						that.trigger('publish.articleOne', articles[0]);
 					}, 1000);
@@ -57,7 +55,7 @@
 						that.stop();
 					}, 7000);
 		
-					that.listen('uri.change', function() {
+					that.listen('uri.changed', function() {
 						that.stop();
 					});					
 

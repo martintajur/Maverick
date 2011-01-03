@@ -17,6 +17,7 @@
 		
 		<script type="text/javascript">
 			$(function() {
+				uri.setBase('http://maverick.dev/demo'); // this should be changed to whatever your application root URL is.
 				routes.add({
 					'/': 'button',
 					'/articles': 'article'
@@ -29,6 +30,8 @@
 	</head>
 	
 	<body>
+		
+		<noscript><strong>Oh, this is sad!</stong> You are seeing this message because Javascript is disabled in your browser. You need to enable Javascript to use this application.</noscript>
 		
 	</body>
 </html>

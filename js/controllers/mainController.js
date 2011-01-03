@@ -1,6 +1,6 @@
 (function(){
 
-	controllers.add('button', function() {}, {
+	controllers.add('main', function() {}, {
 	
 		onStart: function() {
 			
@@ -14,22 +14,10 @@
 			
 			var that = this;
 			
-			document.title = 'Welcome to Maverick';
+			document.title = 'Maverick';
 			
-			// Start the button view
-			this.demoView = views.start('button');
+			this.mainView = views.start('main');
 			
-			// Listen to the "launch.articles" event:
-			this.listen('launch.articles', function() {
-				uri.goTo('/articles');
-			});
-			
-			// Also listen to the "url.change" event:
-			// (note: the "url.change" event is a global event that is triggered automatically upon
-			// the URI changes.
-			this.listen('uri.changed', function() {
-				that.stop();
-			});
 		},
 		
 		onStop: function() {
