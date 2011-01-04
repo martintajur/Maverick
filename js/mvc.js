@@ -146,6 +146,25 @@ var uri = {
 			return returnVal;
 		}
 	}
+	if (!String.prototype.trim) {
+		String.prototype.trim = function() {
+			var whitespace = " \n\r\t\f\x0b\xa0\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u200b\u2028\u2029\u3000";
+		
+			for (i = 0; i < this.length; i++) {
+				if (whitespace.indexOf(this.charAt(i)) === -1) {
+					this = this.substring(i);
+					break;
+				}
+			}
+			for (i = this.length - 1; i >= 0; i--) {
+				if (whitespace.indexOf(this.charAt(i)) === -1) {
+					this = this.substring(0, i + 1);
+					break;
+				}
+			}
+			return this;
+		}
+	}
 	
 	// function that retrieves the last item in array
 	if (!Array.prototype.last) {
@@ -284,6 +303,23 @@ var uri = {
 		return returnVal;
 	};
 	
+	_m.selfHasFunction = function() {
+		var returnVal = true;
+		var args = [].slice.call(arguments); // turns the arguments object into an array
+		if (params) {
+			var paramArr = params.toString().split(',');
+			var paramArrEvaled = false;
+			for (var i = 0; i < paramArr.length; i++) {
+				if (typeof eval('this.' + paramArr[i].trim()) === 'undefined') {
+					throw new Error('View '+this.getName()+' cannot start - required attribute missing: ' + paramArr[i].trim());
+					returnVal = false;
+					break;
+				}
+			}
+		}
+		return returnVal;
+	};
+	
 	models = (function() {
 		return {
 	
@@ -380,6 +416,7 @@ var uri = {
 					getName: function() {
 						return viewName;
 					},
+					has: _m.selfHasFunction,
 					onStart: function() {
 						return;
 					},
@@ -492,6 +529,7 @@ var uri = {
 					getName: function() {
 						return controllerName;
 					},
+					has: _m.selfHasFunction,
 					onStart: function() {
 						return;
 					},
