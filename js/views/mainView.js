@@ -4,19 +4,19 @@
 		
 		onStart: function() {
 
-			this.menuElement = $('<div>')
-				.addClass('mainmenu')
-				.appendTo('body');
+			this.menuContainer = $('<div>')
+				.addClass('mainmenuContainer')
+				.prependTo('body');
 			
-			this.contentElement = $('<div>')
-				.addClass('content')
+			this.contentContainer = $('<div>')
+				.addClass('contentContainer')
 				.appendTo('body');
 				
 		},
 		
 		onStop: function() {
-			this.menuElement.remove();
-			this.contentElement.remove();
+			this.menuContainer.remove();
+			this.contentContainer.remove();
 		}
 	
 	});

@@ -1,6 +1,8 @@
 (function(){
 
-	controllers.add('button', function() {}, {
+	controllers.add('home', function(options) {
+		this.container = (options.container ? options.container : $('<div>').appendTo('body'));
+	}, {
 	
 		onStart: function() {
 			
@@ -14,10 +16,10 @@
 			
 			var that = this;
 			
-			document.title = 'Welcome to Maverick';
+			document.title = 'Demo application';
 			
 			// Start the button view
-			this.demoView = views.start('button');
+			this.demoView = views.start('home', { container: this.container });
 			
 			// Listen to the "launch.articles" event:
 			this.listen('launch.articles', function() {

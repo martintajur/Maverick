@@ -5,7 +5,7 @@
 		// This here is the constructor function for this view.
 		// In here we can define some default locally scoped variables or do some other stuff.
 		// In this view right now, we don't need to use the constructor at all.
-	
+		
 	}, {
 		
 		onStart: function() {
@@ -18,31 +18,28 @@
 			this.box = $('<article>');
 			
 			this.titleElem = $('<h1>')
-				.html(this.title)
+				.html(this.article.title)
 				.appendTo(this.box);
 			
 			this.authorElem = $('<small>')
-				.html('By ' + this.author)
+				.html('By ' + this.article.author)
 				.addClass('author')
 				.appendTo(this.box);
 			
 			this.contentElem = $('<div>')
 				.addClass('content')
-				.html(this.content)
+				.html(this.article.content)
 				.appendTo(this.box);
 			
 			this.box
 				.hide()
-				.appendTo('body')
+				.appendTo(this.container)
 				.fadeIn(100);
 			
 		},
 		
 		onStop: function() {
-			this.box
-				.fadeOut(100, function() {
-					$(this).remove(); 
-				});
+			this.box.remove();
 		}
 
 	});

@@ -1,11 +1,11 @@
 (function() {
 
-	views.add('button', function() {
+	views.add('home', function(options) {
 		
 		// This here is the constructor function for this view.
 		// In here we can define some default locally scoped variables or do some other stuff.
-		// In this view right now, we don't need to use the constructor at all.
-	
+		this.container = (options.container ? options.container : $('<div>').appendTo('body'));
+		
 	}, {
 		
 		onStart: function() {
@@ -23,14 +23,14 @@
 					.end()
 				.find('h1')
 					.addClass('intro')
-					.html('★ Welcome to Maverick!')
+					.html('★ Demo application')
 					.end()
-				.appendTo('body');
+				.appendTo(this.container);
 				
 			
 			this.link = $('<div>')
 				.addClass('launcher')
-				.appendTo('body')
+				.appendTo(this.container)
 				.html('Launch articles')
 				.click(function() {
 					that.trigger('launch.articles');
@@ -39,8 +39,7 @@
 		},
 		
 		onStop: function() {
-			this.link.remove();
-			this.intro.remove();
+			this.container.empty();
 		}
 	
 	});

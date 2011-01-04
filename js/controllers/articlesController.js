@@ -1,13 +1,14 @@
 (function(){
 
-	controllers.add('article', function() {
+	controllers.add('articles', function(options) {
 		
 		// This here is the constructor function for this controller.
 		// In here we just define some default locally scoped variables that we will use later on.
 		
-		this.articleOne;
-		this.articleTwo;
+		this.articleOne = false;
+		this.articleTwo = false;
 		this.timeouts = {};
+		this.container = (options.container ? options.container : $('<div>').appendTo('body'));
 		
 	}, {
 	
@@ -32,14 +33,20 @@
 
 			this.listen('publish.articleOne', launchArticleOne);
 			
-			models.article.getArticles({some: 'param',someOther: 'param2'}, function(articles) {
+			models.article.getArticles({}, function(articles) {
 									
 					that.timeouts[0] = setTimeout(function() {
-						that.trigger('publish.articleOne', articles[0]);
+						that.trigger('publish.articleOne', {
+							container: that.container,
+							article: articles[0]
+						});
 					}, 1000);
 					
 					that.timeouts[1] = setTimeout(function() {
-						that.articleTwo = views.start('article', articles[1]);
+						that.articleTwo = views.start('article', {
+							container: that.container,
+							article: articles[1]
+						});
 					}, 2000);
 					
 					that.timeouts[2] = setTimeout(function() {
@@ -55,12 +62,13 @@
 						that.stop();
 					}, 7000);
 		
-					that.listen('uri.changed', function() {
-						that.stop();
-					});					
-
 				}
 			);
+
+			this.listen('uri.changed', function() {
+				that.stop();
+			});					
+
 		},
 		
 		removeElements: function() {

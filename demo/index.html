@@ -7,25 +7,31 @@
 		<script src="jquery-1.4.4.js"></script>
 		<script src="../js/mvc.js"></script>
 		
-		<script src="../js/controllers/buttonController.js"></script>
-		<script src="../js/controllers/articleController.js"></script>
+		<script src="../js/controllers/mainController.js"></script>
+		<script src="../js/controllers/menuController.js"></script>
+		<script src="../js/controllers/homeController.js"></script>
+		<script src="../js/controllers/articlesController.js"></script>
 
 		<script src="../js/models/articleModel.js"></script>
 		
+		<script src="../js/views/mainView.js"></script>
+		<script src="../js/views/menuView.js"></script>
 		<script src="../js/views/articleView.js"></script>
-		<script src="../js/views/buttonView.js"></script>
+		<script src="../js/views/homeView.js"></script>
 		
 		<script type="text/javascript">
 			$(function() {
+				controllers.autoStart(false); // this disables automatic URI to controller routing
 				uri.setBase('http://maverick.dev/demo'); // this should be changed to whatever your application root URL is.
 				routes.add({
-					'/': 'button',
-					'/articles': 'article'
+					'/': 'home',
+					'/articles': 'articles'
 				});
-				controllers.start();
+				controllers.start('main');
 			});
 		</script>
 		
+		<link rel="stylesheet" href="reset.css" media="all">
 		<link rel="stylesheet" href="demo.css" media="all">
 	</head>
 	
