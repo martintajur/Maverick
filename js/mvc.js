@@ -312,7 +312,7 @@ var uri = {
 			var paramArrEvaled = false;
 			for (var i = 0; i < paramArr.length; i++) {
 				if (typeof eval('this.' + paramArr[i].trim()) === 'undefined') {
-					throw new Error('View '+this.getName()+' cannot start - required attribute missing: ' + paramArr[i].trim());
+					throw new Error(this.getType() + ' ' + this.getName() + ' cannot start - required attribute missing: ' + paramArr[i].trim());
 					returnVal = false;
 					break;
 				}
