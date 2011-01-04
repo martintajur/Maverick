@@ -306,6 +306,7 @@ var uri = {
 	_m.selfHasFunction = function() {
 		var returnVal = true;
 		var args = [].slice.call(arguments); // turns the arguments object into an array
+		var params = args.join(',');
 		if (params) {
 			var paramArr = params.toString().split(',');
 			var paramArrEvaled = false;
