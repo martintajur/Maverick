@@ -21,12 +21,12 @@
 		
 		<script type="text/javascript">
 			$(function() {
-				controllers.autoStart(false); // this disables automatic URI to controller routing
-				uri.setBase('http://maverick.dev/demo'); // this should be changed to whatever your application root URL is.
+				uri.setBase(document.location.href); // this should be changed to whatever your application root URL is.
 				routes.add({
 					'/': 'home',
 					'/articles': 'articles'
 				});
+				controllers.autoStart(false); // this disables automatic URI to controller routing
 				controllers.start('main');
 			});
 		</script>
