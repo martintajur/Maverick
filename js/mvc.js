@@ -72,7 +72,7 @@ var uri = {
 	_m.stateContainer = (document.location.protocol === 'file:' ? 'hash' : (window.history && history.pushState ? 'history' : 'hash'));
 	
 	// internal logger
-	_m.log = (window.console.log ? function() { console.log(null, arguments); } : function() { });
+	_m.log = (window.console.log ? function() { console.log('MVC', arguments); } : function() { });
 	
 	// internal events handler
 	_m.events = { listeners: {} };
