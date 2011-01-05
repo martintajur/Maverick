@@ -867,7 +867,9 @@ var uri = {
 		}
 	}());
 	
-	// as defauly, we set the URI base to be the current document location href
+	// as default, we set the URI base to be the current document location href.
+	// this should actually be re-set from by your application and should always reflect the
+	// "starting point" of the runnning application.
 	uri.setBase(document.location.href);
 		
 	// the welcomeController (only executed when there are no routes defined)
