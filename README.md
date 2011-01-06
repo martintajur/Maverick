@@ -1,6 +1,18 @@
 ★ Maverick - a small Javascript-based MVC framework 
 ===================================================
 
+Maverick lets you
+-----------------
+
+* separate application logic (controller) from views and data gathering (models)
+* create views and instantiate them with different context
+* route URIs to controllers using regular expressions
+* use centralized event handling
+* change URI on browser address bar without refreshing the page (fallback to hash updating)
+* execute multiple model calls at a time and provide a single callback function
+* organize file structure the way you want (so that later you can combine all views, models and controllers into a single .js file in production for better page speed)
+* and much more.
+
 Maverick is right for you if...
 -------------------------------
 
@@ -24,7 +36,7 @@ These variables are used to start and stop views and controllers, access the sta
 Footnotes and licence
 ---------------------
 
-Copyright (c) 2010 Martin Tajur (martin@tajur.ee).
+Copyright (c) 2010 Martin Tajur, Round Ltd (martin@round.ee).
 
 Maverick is licensed under the MIT licence:
 
