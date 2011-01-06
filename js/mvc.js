@@ -1,6 +1,6 @@
 /*!
 Maverick - the Javascript-based Model-View-Controller web application framework
-Copyright (c) 2010 Martin Tajur (martin.tajur@gmail.com)
+Copyright (c) 2010-2011 Martin Tajur, Round Ltd (martin@round.ee)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@ THE SOFTWARE.
 // the only globally scoped variables are:
 var models = {
 	add: function() {},
-	remove: function() {}
+	getMany: function() {}
 };
 var views = {
 	add: function() {},
@@ -113,9 +113,11 @@ var uri = {
 	// jQuery CDN path (used by welcomeController, only in case the welcomeController is started)
 	_m.jQueryCDNPath = 'http://code.jquery.com/jquery-1.4.4.min.js';
 	
-	// function that will always return a unique ID
-	// params:
-	// returns: int
+	/**
+	 * Always returns a unique ID
+	 * 
+	 * @return {number} Unique ID
+	 */
 	_m.getUID = (
 		function() {
 			var id = 1;
@@ -137,6 +139,8 @@ var uri = {
 			return returnVal;
 		}
 	}
+	
+	// function that removes leading slash from any string
 	if (!String.prototype.removeLeadingSlash) {
 		String.prototype.removeLeadingSlash = function() {
 			var returnVal = this;
@@ -146,6 +150,8 @@ var uri = {
 			return returnVal;
 		}
 	}
+	
+	// function that trims whitespace from around a string
 	if (!String.prototype.trim) {
 		String.prototype.trim = function() {
 			var whitespace = " \n\r\t\f\x0b\xa0\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u200b\u2028\u2029\u3000";
@@ -248,8 +254,8 @@ var uri = {
 	}
 	
 	// stores a new listener
-	// params: string event, function listener
-	// returns: int
+	// @param string event, function listener
+	// @return int
 	_m.events.listen = function(event, listener) {
 		var listenerId = _m.getUID();
 		if (!_m.events.listeners[event]) {
@@ -260,8 +266,8 @@ var uri = {
 	};
 	
 	// triggers an event and launches all active listeners of that event
-	// params: string event, mixed data
-	// returns: bool
+	// @param string event, mixed data
+	// @return bool
 	_m.events.trigger = function(event, data) {
 		if (_m.events.listeners[event]) {
 			for (var key in _m.events.listeners[event]) {
@@ -273,13 +279,13 @@ var uri = {
 	};
 	
 	// stops a listener
-	// params: string event, string listenerId
+	// @param string event, string listenerId
 	_m.events.stopListener = function(event, listenerId) {
 		delete _m.events.listeners[event][listenerId];
 	};
 	
 	// finds a route based on given URI
-	// params: string uri
+	// @param string uri
 	// return: string (relevant controller name)
 	_m.router.findRoute = function(givenUri) {
 		var returnVal = false, uriToMatch;
@@ -325,7 +331,7 @@ var uri = {
 		return {
 	
 			// adds a new model, instantiates it and extends its functions with wrapper functions
-			// params: string modelName , function construct, object givenProto
+			// @param string modelName , function construct, object givenProto
 			add: function(modelName, construct, givenProto) {
 				if (_m.debug) { _m.log('Adding model ' + modelName); }
 				if (_m.availableModels[modelName]) {
@@ -367,7 +373,7 @@ var uri = {
 			
 			// a tricky function that handles retrieving data from multiple models simultaneously.
 			// after all models have replied their data, it executes a single callback function.
-			// params: function [model method], function [model method], ..., function [callback function]
+			// @param function [model method], function [model method], ..., function [callback function]
 			// returns mixed [response data], mixed [response data], mixed [response data], ...
 			getMany: function() {
 				var args = [].slice.call(arguments); // turns the arguments object into an array
@@ -405,7 +411,7 @@ var uri = {
 	views = (function() {
 		return {
 			// adds a new view
-			// params: string viewName, function construct, object givenProto
+			// @param string viewName, function construct, object givenProto
 			add: function(viewName, construct, givenProto) {
 				if (_m.debug) { _m.log('Adding view ' + viewName); }
 				if (_m.availableViews[viewName]) {
@@ -434,7 +440,7 @@ var uri = {
 						return;
 					},
 					stop: function() {
-						return;
+						return views.stop(this);
 					},
 					afterStop: function() {
 						return;
@@ -460,8 +466,8 @@ var uri = {
 			},
 			
 			// starts a view
-			// params: string viewName, object options
-			// returns: viewInstance
+			// @param string viewName, object options
+			// @return viewInstance
 			start: function(viewName, options) {
 				if (_m.debug) { _m.log('Starting view ' + viewName, options); }
 				if (!_m.availableViews[viewName]) {
@@ -486,8 +492,8 @@ var uri = {
 			},
 			
 			// stops a view
-			// params: viewInstance view
-			// returns: bool
+			// @param viewInstance view
+			// @return bool
 			stop: function(view) {
 				var returnVal = false, viewName = '';
 				if (view.isStarted() !== true) {
@@ -518,7 +524,7 @@ var uri = {
 	controllers = (function() {
 		return {
 			// adds a new controller
-			// params: string controllerName, function construct, object givenProto
+			// @param string controllerName, function construct, object givenProto
 			add: function(controllerName, construct, givenProto) {
 				if (_m.debug) { _m.log('Adding controller ' + controllerName); }
 				if (_m.availableControllers[controllerName]) {
@@ -547,7 +553,7 @@ var uri = {
 						return;
 					},
 					stop: function() {
-						controllers.stop(this);
+						return controllers.stop(this);
 					},
 					afterStop: function() {
 						return;
@@ -585,8 +591,8 @@ var uri = {
 			},
 			
 			// starts a controller
-			// params: string controllerName, mixed options
-			// returns: controllerInstance
+			// @param string controllerName, mixed options
+			// @return controllerInstance
 			start: function(controllerCall, options) {
 
 				if (_m.debug) { _m.log('Trying to start controller: ' + controllerCall, options); }
@@ -651,8 +657,8 @@ var uri = {
 			},
 			
 			// stops a controller
-			// params: controllerInstance controller
-			// returns: bool
+			// @param controllerInstance controller
+			// @return bool
 			stop: function(controller) {
 				var returnVal = false, controllerName = '';
 				if (controller.isStarted() !== true) {
@@ -679,8 +685,8 @@ var uri = {
 			},
 			
 			// change state of autoStartControllers
-			// params: bool state
-			// returns bool (true if the state was changed successfully)
+			// @param {boolean} state
+			// returns {boolean} (true if the state was changed successfully)
 			autoStart: function(state) {
 				return (_m.autoStartControllers = state);
 			}
@@ -690,7 +696,7 @@ var uri = {
 	routes = (function() {
 		return {
 			// adds a new route, overriding any of the previous routes with the same source
-			// params: object options ({source: destination, source: destination ... })
+			// @param object options ({source: destination, source: destination ... })
 			// returns bool
 			add: function(options) {
 				for (var key in options) {
@@ -702,7 +708,7 @@ var uri = {
 			},
 			
 			// removes a route
-			// params: string source
+			// @param string source
 			remove: function(source) {
 				var returnVal = false, tmpData;
 				for (var key in _m.activeRoutes) {
@@ -717,17 +723,6 @@ var uri = {
 					throw new Error('Unable to remove a route ' + source + ' - route does not exist.');
 				}
 				return returnVal;
-			},
-			
-			// change the container for routes
-			setContainer: function(container) {
-				if (container === 'history' || container === 'hash') {
-					_m.stateContainer = container;
-					return true;
-				}
-				else {
-					return false;
-				}
 			}
 		}
 	}());
@@ -735,8 +730,8 @@ var uri = {
 	uri = (function() {
 		return {
 			// update the active URI
-			// params: string uri
-			// returns: bool
+			// @param string uri
+			// @return bool
 			goTo: function(newUri, newState) {
 				if (!newUri) {
 					throw new Error('Cannot change URI - new URI not given.');
@@ -772,15 +767,15 @@ var uri = {
 			},
 			
 			// returns one URI segment
-			// params: int i
-			// returns: string
+			// @param int i
+			// @return string
 			getSegment: function(i) {
 				return _m.uriHelper.segments[i];
 			},
 	
 			// returns multiple URI segments, joined with /
-			// params: int start, int end
-			// returns: string
+			// @param int start, int end
+			// @return string
 			getSegments: function(start, end) {
 				var returnVal = false;
 				if (start <= end) {
@@ -793,8 +788,8 @@ var uri = {
 			},
 	
 			// returns URI as object
-			// params: int offset
-			// returns: object
+			// @param int offset
+			// @return object
 			asObj: function(offset) {
 				var returnVal = {};
 				for (var i = 0; i < _m.uriHelper.segments.length; i++) {
@@ -805,8 +800,8 @@ var uri = {
 			},
 			
 			// turns any given URI string into associative object and returns it
-			// params: string uri
-			// returns: object
+			// @param string uri
+			// @return object
 			toObj: function(uri) {
 				var returnVal = {}, uriPts = uri.split('/');
 				for (var i = 0; i < uriPts.length; i++) {
@@ -817,8 +812,8 @@ var uri = {
 			},
 	
 			// generates URI string from an object
-			// params: object object
-			// returns: string
+			// @param object object
+			// @return string
 			fromObj: function(object) {
 				var returnVal = [];
 				for (var key in object) {
@@ -828,29 +823,29 @@ var uri = {
 			},
 	
 			// returns full URI as string
-			// params: 
-			// returns: string
+			// @param 
+			// @return string
 			asString: function() {
 				return _m.uriHelper.segments.join('/');
 			},
 	
 			// returns the number of URI segments in total
-			// params: 
-			// returns: int
+			// @param 
+			// @return int
 			getTotalSegments: function() {
 				return _m.uriHelper.segments.length;
 			},
 	
 			// returns the segments as array
-			// params: 
-			// returns: array
+			// @param 
+			// @return array
 			asArray: function() {
 				return _m.uriHelper.segments;
 			},
 			
 			// set the base URI that is used for all further URI generations
-			// params: string baseUri
-			// returns: bool
+			// @param string baseUri
+			// @return bool
 			setBase: function(baseUri) {
 				var tmpData = _m.uriHelper.baseUri;
 				_m.uriHelper.baseUri = baseUri.removeTrailingSlash();
@@ -859,10 +854,21 @@ var uri = {
 			},
 			
 			// returns the application State object
-			// params: 
-			// returns: mixed
+			// @param 
+			// @return mixed
 			getState: function() {
 				return _m.appState;
+			},
+			
+			// change the container for routes
+			setContainer: function(container) {
+				if (container === 'history' || container === 'hash') {
+					_m.stateContainer = container;
+					return true;
+				}
+				else {
+					return false;
+				}
 			}
 		}
 	}());
