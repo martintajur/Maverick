@@ -254,8 +254,8 @@ var uri = {
 	}
 	
 	// stores a new listener
-	// @param string event, function listener
-	// @return int
+	// @param {string} event, {function} listener
+	// @return {integer}
 	_m.events.listen = function(event, listener) {
 		var listenerId = _m.getUID();
 		if (!_m.events.listeners[event]) {
@@ -266,8 +266,8 @@ var uri = {
 	};
 	
 	// triggers an event and launches all active listeners of that event
-	// @param string event, mixed data
-	// @return bool
+	// @param {string} event, {mixed} data
+	// @return {boolean}
 	_m.events.trigger = function(event, data) {
 		if (_m.events.listeners[event]) {
 			for (var key in _m.events.listeners[event]) {
@@ -279,14 +279,14 @@ var uri = {
 	};
 	
 	// stops a listener
-	// @param string event, string listenerId
+	// @param {string} event, {string} listenerId
 	_m.events.stopListener = function(event, listenerId) {
 		delete _m.events.listeners[event][listenerId];
 	};
 	
 	// finds a route based on given URI
-	// @param string uri
-	// return: string (relevant controller name)
+	// @param {string} uri
+	// @return {string} relevant controller name
 	_m.router.findRoute = function(givenUri) {
 		var returnVal = false, uriToMatch;
 		givenUri = givenUri.removeTrailingSlash();
@@ -331,7 +331,7 @@ var uri = {
 		return {
 	
 			// adds a new model, instantiates it and extends its functions with wrapper functions
-			// @param string modelName , function construct, object givenProto
+			// @param {string} modelName , {function} construct, {object} givenProto
 			add: function(modelName, construct, givenProto) {
 				if (_m.debug) { _m.log('Adding model ' + modelName); }
 				if (_m.availableModels[modelName]) {
@@ -373,8 +373,8 @@ var uri = {
 			
 			// a tricky function that handles retrieving data from multiple models simultaneously.
 			// after all models have replied their data, it executes a single callback function.
-			// @param function [model method], function [model method], ..., function [callback function]
-			// returns mixed [response data], mixed [response data], mixed [response data], ...
+			// @param {function} [model method], {function} [model method], ..., {function} [callback function]
+			// @return {object} [response data], {object} [response data], {object} [response data], ...
 			getMany: function() {
 				var args = [].slice.call(arguments); // turns the arguments object into an array
 	
@@ -411,7 +411,7 @@ var uri = {
 	views = (function() {
 		return {
 			// adds a new view
-			// @param string viewName, function construct, object givenProto
+			// @param {string} viewName, {function} construct, {object} givenProto
 			add: function(viewName, construct, givenProto) {
 				if (_m.debug) { _m.log('Adding view ' + viewName); }
 				if (_m.availableViews[viewName]) {
@@ -466,8 +466,8 @@ var uri = {
 			},
 			
 			// starts a view
-			// @param string viewName, object options
-			// @return viewInstance
+			// @param {string} viewName, {object} options
+			// @return {object} viewInstance
 			start: function(viewName, options) {
 				if (_m.debug) { _m.log('Starting view ' + viewName, options); }
 				if (!_m.availableViews[viewName]) {
@@ -492,8 +492,8 @@ var uri = {
 			},
 			
 			// stops a view
-			// @param viewInstance view
-			// @return bool
+			// @param {object} view
+			// @return {boolean}
 			stop: function(view) {
 				var returnVal = false, viewName = '';
 				if (view.isStarted() !== true) {
@@ -524,7 +524,7 @@ var uri = {
 	controllers = (function() {
 		return {
 			// adds a new controller
-			// @param string controllerName, function construct, object givenProto
+			// @param {string} controllerName, {function} construct, {object} givenProto
 			add: function(controllerName, construct, givenProto) {
 				if (_m.debug) { _m.log('Adding controller ' + controllerName); }
 				if (_m.availableControllers[controllerName]) {
@@ -591,8 +591,8 @@ var uri = {
 			},
 			
 			// starts a controller
-			// @param string controllerName, mixed options
-			// @return controllerInstance
+			// @param {string} controllerName, {mixed} options
+			// @return {object} controllerInstance
 			start: function(controllerCall, options) {
 
 				if (_m.debug) { _m.log('Trying to start controller: ' + controllerCall, options); }
@@ -657,8 +657,8 @@ var uri = {
 			},
 			
 			// stops a controller
-			// @param controllerInstance controller
-			// @return bool
+			// @param {object} controllerInstance
+			// @return {boolean}
 			stop: function(controller) {
 				var returnVal = false, controllerName = '';
 				if (controller.isStarted() !== true) {
@@ -686,7 +686,7 @@ var uri = {
 			
 			// change state of autoStartControllers
 			// @param {boolean} state
-			// returns {boolean} (true if the state was changed successfully)
+			// @return {boolean} (true if the state was changed successfully)
 			autoStart: function(state) {
 				return (_m.autoStartControllers = state);
 			}
@@ -696,8 +696,8 @@ var uri = {
 	routes = (function() {
 		return {
 			// adds a new route, overriding any of the previous routes with the same source
-			// @param object options ({source: destination, source: destination ... })
-			// returns bool
+			// @param {object} options ({source: destination, source: destination ... })
+			// @return {boolean}
 			add: function(options) {
 				for (var key in options) {
 					if (_m.debug) { _m.log('Adding route for ' + key + ': ' + options[key]); }
@@ -708,7 +708,7 @@ var uri = {
 			},
 			
 			// removes a route
-			// @param string source
+			// @param {string} source
 			remove: function(source) {
 				var returnVal = false, tmpData;
 				for (var key in _m.activeRoutes) {
@@ -730,8 +730,8 @@ var uri = {
 	uri = (function() {
 		return {
 			// update the active URI
-			// @param string uri
-			// @return bool
+			// @param {string} uri
+			// @return {boolean}
 			goTo: function(newUri, newState) {
 				if (!newUri) {
 					throw new Error('Cannot change URI - new URI not given.');
@@ -767,15 +767,15 @@ var uri = {
 			},
 			
 			// returns one URI segment
-			// @param int i
-			// @return string
+			// @param {integer} i
+			// @return {string}
 			getSegment: function(i) {
 				return _m.uriHelper.segments[i];
 			},
 	
 			// returns multiple URI segments, joined with /
-			// @param int start, int end
-			// @return string
+			// @param {integer} start, {integer} end
+			// @return {string}
 			getSegments: function(start, end) {
 				var returnVal = false;
 				if (start <= end) {
@@ -788,8 +788,8 @@ var uri = {
 			},
 	
 			// returns URI as object
-			// @param int offset
-			// @return object
+			// @param {integer} offset
+			// @return {object}
 			asObj: function(offset) {
 				var returnVal = {};
 				for (var i = 0; i < _m.uriHelper.segments.length; i++) {
@@ -800,8 +800,8 @@ var uri = {
 			},
 			
 			// turns any given URI string into associative object and returns it
-			// @param string uri
-			// @return object
+			// @param {string} uri
+			// @return {object}
 			toObj: function(uri) {
 				var returnVal = {}, uriPts = uri.split('/');
 				for (var i = 0; i < uriPts.length; i++) {
@@ -812,8 +812,8 @@ var uri = {
 			},
 	
 			// generates URI string from an object
-			// @param object object
-			// @return string
+			// @param {object} object
+			// @return {string}
 			fromObj: function(object) {
 				var returnVal = [];
 				for (var key in object) {
@@ -823,29 +823,26 @@ var uri = {
 			},
 	
 			// returns full URI as string
-			// @param 
-			// @return string
+			// @return {string}
 			asString: function() {
 				return _m.uriHelper.segments.join('/');
 			},
 	
 			// returns the number of URI segments in total
-			// @param 
-			// @return int
+			// @return {integer}
 			getTotalSegments: function() {
 				return _m.uriHelper.segments.length;
 			},
 	
 			// returns the segments as array
-			// @param 
-			// @return array
+			// @return {array}
 			asArray: function() {
 				return _m.uriHelper.segments;
 			},
 			
 			// set the base URI that is used for all further URI generations
-			// @param string baseUri
-			// @return bool
+			// @param {string} baseUri
+			// @return {boolean}
 			setBase: function(baseUri) {
 				var tmpData = _m.uriHelper.baseUri;
 				_m.uriHelper.baseUri = baseUri.removeTrailingSlash();
@@ -854,8 +851,7 @@ var uri = {
 			},
 			
 			// returns the application State object
-			// @param 
-			// @return mixed
+			// @return {mixed}
 			getState: function() {
 				return _m.appState;
 			},
