@@ -7,17 +7,17 @@
 		<script src="jquery-1.4.4.js"></script>
 		<script src="../js/mvc.js"></script>
 		
-		<script src="../js/controllers/mainController.js"></script>
-		<script src="../js/controllers/menuController.js"></script>
-		<script src="../js/controllers/homeController.js"></script>
-		<script src="../js/controllers/articlesController.js"></script>
+		<script src="controllers/mainController.js"></script>
+		<script src="controllers/menuController.js"></script>
+		<script src="controllers/homeController.js"></script>
+		<script src="controllers/articlesController.js"></script>
 
-		<script src="../js/models/articleModel.js"></script>
+		<script src="models/articleModel.js"></script>
 		
-		<script src="../js/views/mainView.js"></script>
-		<script src="../js/views/menuView.js"></script>
-		<script src="../js/views/articleView.js"></script>
-		<script src="../js/views/homeView.js"></script>
+		<script src="views/mainView.js"></script>
+		<script src="views/menuView.js"></script>
+		<script src="views/articleView.js"></script>
+		<script src="views/homeView.js"></script>
 		
 		<script type="text/javascript">
 			$(function() {
@@ -26,7 +26,7 @@
 					'/': 'home',
 					'/articles': 'articles'
 				});
-				$uri.setContainer('history');
+				$uri.setContainer('hash');
 				$controllers.autoStart(false); // this disables automatic URI to controller routing
 				$controllers.start('main');
 			});
