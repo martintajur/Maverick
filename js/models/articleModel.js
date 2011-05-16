@@ -1,6 +1,6 @@
 (function() {
 
-	models.add('article', function() {}, {
+	$models.add('article', function() {}, {
 		
 		getArticles: function(params, callback) {
 			

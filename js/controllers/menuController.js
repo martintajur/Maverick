@@ -1,6 +1,6 @@
 (function(){
 
-	controllers.add('menu', function(options) {
+	$controllers.add('menu', function(options) {
 		this.container = (options.container ? options.container : $('<div>').appendTo('body'));
 	}, {
 	
@@ -8,28 +8,29 @@
 		
 			var that = this;
 			
-			this.menuView = views.start('menu', { container: this.container });
+			this.menuView = $views.start('menu', { container: this.container });
 			
 			this.menuView.menuElem.find('li:first a').addClass('active');
 			
 			this.menuView.menuElem.find('li a').each(function() {
 				$(this).click(function(e) {
 					$(this).addClass('active').parents('li').siblings('li').find('a').removeClass('active');
-					uri.goTo($(this).attr('href'));
+					$uri.goTo($(this).attr('href'));
+					$(this).blur();
 					e.preventDefault();
 				});
 			});
 			
-			var uriChangeFunction = function(uriObj) {
-				var activeMenuItem = that.menuView.menuElem.find('a[href="/' + uriObj.getSegment(0) + '"]');
+			var $uriChangeFunction = function($uriObj) {
+				var activeMenuItem = that.menuView.menuElem.find('a[href="/' + ($uriObj.getSegment(1) ? $uriObj.getSegment(1) : '') + '"]');
 				if (activeMenuItem.length) {
 					activeMenuItem.addClass('active').parents('li').siblings('li').find('a').removeClass('active');
 				}
 			};
 			
-			uriChangeFunction(uri);
+			$uriChangeFunction($uri);
 			
-			this.listen('uri.changed', uriChangeFunction);
+			this.listen('uri.changed', $uriChangeFunction);
 			
 		},
 		

@@ -1,6 +1,6 @@
 (function(){
 	
-	views.add('article', function(p) {
+	$views.add('article', function(p) {
 		
 		// This here is the constructor function for this view.
 		// In here we can define some default locally scoped variables or do some other stuff.

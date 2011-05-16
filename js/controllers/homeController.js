@@ -1,6 +1,6 @@
 (function(){
 
-	controllers.add('home', function(options) {
+	$controllers.add('home', function(options) {
 		this.container = (options.container ? options.container : $('<div>').appendTo('body'));
 	}, {
 	
@@ -19,11 +19,11 @@
 			document.title = 'Demo application';
 			
 			// Start the button view
-			this.demoView = views.start('home', { container: this.container });
+			this.demoView = $views.start('home', { container: this.container });
 			
 			// Listen to the "launch.articles" event:
 			this.listen('launch.articles', function() {
-				uri.goTo('/articles');
+				$uri.goTo('/articles');
 			});
 			
 			// Also listen to the "url.change" event:

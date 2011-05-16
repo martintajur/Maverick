@@ -1,6 +1,6 @@
 (function() {
 
-	views.add('main', function() {}, {
+	$views.add('main', function() {}, {
 		
 		onStart: function() {
 

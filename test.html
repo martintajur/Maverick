@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>asd</title>
+	</head>
+	<body>
+	asd	<a id="link" href="#/gooble">click</a>
+
+
+		<script>
+			
+			var last_hash = '';
+			window.location.hash = last_hash = '#/';
+			
+			window.onhashchange = function() {
+				if (window.location.hash != last_hash) {
+					alert(window.location.hash);
+					last_hash = window.location.hash;
+				}
+			};
+			
+		</script>
+
+	</body>
+</html>

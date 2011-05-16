@@ -1,6 +1,6 @@
 (function() {
 
-	views.add('menu', function() {
+	$views.add('menu', function() {
 		
 		// This here is the constructor function for this view.
 		// In here we can define some default locally scoped variables or do some other stuff.
