@@ -73,7 +73,7 @@ var $uri = {
 	_m.stateContainer = (document.location.protocol === 'file:' ? 'hash' : (window.history && history.pushState ? 'history' : 'hash'));
 	
 	// internal logger
-	_m.log = (window.console.log ? function() { console.log('Maverick', arguments); } : function() { });
+	_m.log = (window.console && window.console.log ? function() { console.log('Maverick', arguments); } : function() { });
 	
 	// internal events handler
 	_m.events = { listeners: {} };
@@ -189,50 +189,64 @@ var $uri = {
 			return returnVal;
 		}
 	}
-
-	// state manager status
-	_m.uriHelper._stateManagerRunning = false;
 	
 	// self-executing anonymous function that initiates the URI object
 	_m.uriHelper.stateManager = function() {
-		if (_m.uriHelper._stateManagerRunning === false) {
+		if (!_m.uriHelper._stateManagerRunInstance) {
 
 			if (_m.debug) { _m.log('State Manager launched.'); }
-
-			_m.uriHelper.stateChange();
 			
-			_m.uriHelper._stateManagerRunInstance = setInterval(function() {
+			_m.lastUri = _m.uriHelper.getCurrentUri();
+			_m.uriHelper.stateChange(true);
+			
+			var uriChangedHandler = function() {
 				if (_m.lastUri != _m.uriHelper.getCurrentUri()) {
-					if (_m.debug) { _m.log('State manager found out about the new URI.'); }
+					if (_m.debug) { _m.log('State manager found out about the new URI (' + _m.lastUri + ' -> ' + _m.uriHelper.getCurrentUri() + ')'); }
+					_m.uriHelper.stateChange(true);
 					
-					_m.uriHelper.stateChange();
+					_m.lastUri = _m.uriHelper.getCurrentUri();
 					
 					if (_m.autoStartControllers) {
 						$controllers.start();
 					}
-					
-					_m.lastUri = _m.uriHelper.getCurrentUri();
 				}
-			}, 50);
+			};
 			
+			_m.uriHelper._stateManagerRunInstance = setInterval(uriChangedHandler, 10);
+			
+/*
+			if (_m.stateContainer === 'history') {
+				window.onpopstate = uriChangedHandler;
+			}
+			else if (_m.stateContainer === 'hash') {
+				window.onhashchange = uriChangedHandler;
+			}
+*/
 		}
-		_m.uriHelper._stateManagerRunning = true;
 	};
 	
 	_m.uriHelper.getCurrentUri = function() {
 		var currentUri = '';
 		
 		if (_m.stateContainer === 'hash') {
-			currentUri = document.location.hash.toString().removeTrailingSlash().substr(1).removeLeadingSlash();
+			currentUri = document.location.hash.toString()
+				.removeTrailingSlash()
+				.substr(1)
+				.removeLeadingSlash();
 		}
 		else if (_m.stateContainer === 'history') {
-			currentUri = document.location.href.toString().removeTrailingSlash().replace(_m.uriHelper.baseUri, '').replace(document.location.hash, '').replace('#','').removeLeadingSlash();
+			currentUri = document.location.href.toString()
+				.removeTrailingSlash()
+				.replace(_m.uriHelper.baseUri, '')
+				.replace(document.location.hash, '')
+				.replace('#','')
+				.removeLeadingSlash();
 		}
 		
 		return currentUri.toString();
 	};
 
-	_m.uriHelper.stateChange = function() {
+	_m.uriHelper.stateChange = function(triggerEvent) {
 		var givenUri = _m.uriHelper.getCurrentUri();
 		
 		if (_m.debug) { _m.log('stateChange called with givenUri ' + givenUri); }
@@ -240,8 +254,10 @@ var $uri = {
 		_m.uriHelper.segments = ('/' + _m.uriHelper.string).split('/').stripEmpty();
 		_m.uriHelper.segments.unshift('');
 		
-		_m.events.trigger('uri.changed', $uri);
-		if (_m.debug) { _m.log('uri.changed event fired!'); }
+		if (triggerEvent) {
+			_m.events.trigger('uri.changed', $uri);
+			if (_m.debug) { _m.log('uri.changed event fired!'); }
+		}
 	};
 	
 	// stores a new listener
@@ -253,6 +269,9 @@ var $uri = {
 			_m.events.listeners[event] = {};
 		}
 		_m.events.listeners[event][listenerId] = listener;
+		if (typeof _m.events.onListened === 'function') {
+			_m.events.onListened(event, listener, listenerId);
+		}
 		return listenerId;
 	};
 	
@@ -265,21 +284,44 @@ var $uri = {
 				_m.events.listeners[event][key](data);
 			}
 		}
+		if (typeof _m.events.onTriggered === 'function') {
+			_m.events.onTriggered(event, data);
+		}
 		/* if (_m.debug) { _m.log(event + ' triggered', data); } */
 		return true;
 	};
 	
 	// stops a listener
-	// @param {string} event, {string} listenerId
-	_m.events.stopListener = function(event, listenerId) {
-		delete _m.events.listeners[event][listenerId];
+	// @param {string} listenerId
+	_m.events.stopListener = function(listenerId) {
+		var returnVal = false;
+		
+		for (var eventKey in _m.events.listeners) {
+			if (_m.events.listeners.hasOwnProperty(eventKey) && _m.events.listeners[eventKey].hasOwnProperty(listenerId)) {
+				delete _m.events.listeners[eventKey][listenerId];
+				
+				returnVal = true;
+				
+				if (typeof _m.events.onListeningStopped === 'function') {
+					var remainingSubscriptions = 0;
+					for (var key in _m.events.listeners[eventKey]) {
+						if (_m.events.listeners[eventKey].hasOwnProperty(key)) {
+							remainingSubscriptions++;
+						}
+					}
+					_m.events.onListeningStopped(eventKey, listenerId, remainingSubscriptions);
+				}
+			}
+		}
+		
+		return returnVal;
 	};
 	
 	// finds a route based on given URI
 	// @param {string} $uri
 	// @return {string} relevant controller name
 	_m.router.findRoute = function(givenUri) {
-		var returnVal = false, uriToMatch;
+		var returnVal = '', uriToMatch;
 		givenUri = givenUri.removeTrailingSlash();
 		if (_m.debug) { _m.log('Finding route for ' + givenUri); }
 		for (var key in _m.activeRoutes) {
@@ -410,7 +452,7 @@ var $uri = {
 				throw new Error('View ' + viewName + ' is already present.');
 			}
 			_m.availableViews[viewName] = construct;
-	
+			
 			_m.availableViews[viewName].prototype = {
 				getName: function() {
 					return viewName;
@@ -442,13 +484,29 @@ var $uri = {
 				},
 				listen: function(event, listener) {
 					var listenerId = _m.events.listen(event, listener);
-					if (!_m.viewListeners[viewName]) {
-						_m.viewListeners[viewName] = {};
+					if (!_m.viewListeners[this.getUID()]) {
+						_m.viewListeners[this.getUID()] = {};
 					}
-					if (!_m.viewListeners[viewName][event]) {
-						_m.viewListeners[viewName][event] = {};
+					if (!_m.viewListeners[this.getUID()][event]) {
+						_m.viewListeners[this.getUID()][event] = {};
 					}
-					_m.viewListeners[viewName][event][listenerId] = true;
+					_m.viewListeners[this.getUID()][event][listenerId] = true;
+					
+					return listenerId;
+				},
+				stopListener: function(listenerId) {
+					var returnVal = false;
+					if (_m.viewListeners[this.getUID()]) {
+						for (var eventKey in _m.viewListeners[this.getUID()]) {
+							if (_m.viewListeners[this.getUID()].hasOwnProperty(eventKey)) {
+								if (_m.viewListeners[this.getUID()][eventKey].hasOwnProperty(listenerId)) {
+									returnVal = _m.events.stopListener(listenerId);
+									delete _m.viewListeners[this.getUID()][eventKey][listenerId];
+								}
+							}
+						}
+					}
+					return returnVal;
 				}
 			};
 			
@@ -471,6 +529,9 @@ var $uri = {
 			}
 			var viewInstance = new _m.availableViews[viewName](options);
 			
+			var viewUID = _m.getUID();
+	
+			viewInstance.getUID = function() { return viewUID; };
 			viewInstance.isStarted = function() { return true; };
 			
 			for (var key in options) {
@@ -492,27 +553,29 @@ var $uri = {
 		// @param {object} view
 		// @return {boolean}
 		stop: function(view) {
-			var returnVal = false, viewName = '';
+			var returnVal = false, viewName = '', viewId = '';
 			if (view.isStarted() !== true) {
 				throw new Error('Unable to stop a view ' + view.getName() + ' - the view was not started.');
 				returnVal = false;
 			}
 			else {
 				viewName = view.getName();
+				viewId = view.getUID();
 				view.beforeStop();
-				if (_m.debug) { _m.log('Stopping view ' + view.getName()); }
+				if (_m.debug) { _m.log('Stopping view ' + view.getName() + ' ' + view.getUID()); }
 				view.onStop();
-				for (var event in _m.viewListeners[view.getName()]) {
-					for (var listenerId in _m.viewListeners[view.getName()][event]) {
-						_m.events.stopListener(event, listenerId);
+				for (var event in _m.viewListeners[view.getUID()]) {
+					for (var listenerId in _m.viewListeners[view.getUID()][event]) {
+						if (_m.debug) { _m.log('Stopping view ' + view.getName() + ' ' + view.getUID() + ' listener ' + listenerId + ' for ' + event); }
+						_m.events.stopListener(listenerId);
 					}
 				}
-				delete _m.viewListeners[view.getName()];
+				delete _m.viewListeners[view.getUID()];
 				view.afterStop();
 				delete view;
 				returnVal = true;
 			}
-			_m.events.trigger('view.stopped', { name: viewName });
+			_m.events.trigger('view.stopped', { name: viewName, id: viewId });
 			return returnVal;
 		}
 	}
@@ -526,7 +589,7 @@ var $uri = {
 				throw new Error('Controller ' + controllerName + ' already present.');
 			}
 			_m.availableControllers[controllerName] = construct;
-			
+
 			_m.availableControllers[controllerName].prototype = {
 				getName: function() {
 					return controllerName;
@@ -559,20 +622,34 @@ var $uri = {
 				},
 				listen: function(event, listener) {
 					var listenerId = _m.events.listen(event, listener);
-					if (!_m.controllerListeners[controllerName]) {
-						_m.controllerListeners[controllerName] = {};
+					if (!_m.controllerListeners[this.getUID()]) {
+						_m.controllerListeners[this.getUID()] = {};
 					}
-					if (!_m.controllerListeners[controllerName][event]) {
-						_m.controllerListeners[controllerName][event] = {};
+					if (!_m.controllerListeners[this.getUID()][event]) {
+						_m.controllerListeners[this.getUID()][event] = {};
 					}
-					_m.controllerListeners[controllerName][event][listenerId] = true;
+					_m.controllerListeners[this.getUID()][event][listenerId] = true;
+				},
+				stopListener: function(listenerId) {
+					var returnVal = false;
+					if (_m.controllerListeners[this.getUID()]) {
+						for (var eventKey in _m.controllerListeners[this.getUID()]) {
+							if (_m.controllerListeners[this.getUID()].hasOwnProperty(eventKey)) {
+								if (_m.controllerListeners[this.getUID()][eventKey].hasOwnProperty(listenerId)) {
+									returnVal = _m.events.stopListener(listenerId);
+									delete _m.controllerListeners[this.getUID()][eventKey][listenerId];
+								}
+							}
+						}
+					}
+					return returnVal;
 				},
 				
 				startView: function(viewName, options) {
-					var viewInstance = _m.$views.start(viewName, options);
-					if (!_m.controller$views[controllerName]) {
-						_m.controller$views[controllerName] = {};
-					}
+					//var viewInstance = _m.$views.start(viewName, options);
+					//if (!_m.controller$views[controllerName]) {
+					//	_m.controller$views[controllerName] = {};
+					//}
 					// work in progress... to do
 				},
 				stopView: function(viewInstance) {
@@ -594,9 +671,9 @@ var $uri = {
 		// @return {object} controllerInstance
 		start: function(controllerCall, options) {
 
-			if (_m.debug) { _m.log('Trying to start controller: ' + controllerCall, options); }
-			
 			_m.uriHelper.stateManager();
+			
+			if (_m.debug) { _m.log('Trying to start controller: ' + controllerCall, options); }
 			
 			if (!controllerCall || controllerCall === '/' || controllerCall == '') {
 				controllerCall = _m.router.findRoute($uri.asString());
@@ -608,17 +685,25 @@ var $uri = {
 			
 			var controllerName = controllerCall.removeTrailingSlash().removeLeadingSlash().split('/')[0];
 			
-			var controllerInstance = new _m.availableControllers[controllerName](options);
+			var controllerInstance = false;
 			
-			controllerInstance.isStarted = function() { return true; };
+			if (typeof _m.availableControllers[controllerName] !== 'undefined') {
+				controllerInstance = new _m.availableControllers[controllerName](options);
+			}
+			
+			if (controllerInstance !== false) {
+				var controllerUID = _m.getUID();
+				controllerInstance.getUID = function() { return controllerUID; };
+				controllerInstance.isStarted = function() { return true; };
 
-			controllerInstance.stop = function() {
-				return $controllers.stop(controllerInstance);
-			};
+				controllerInstance.stop = function() {
+					return $controllers.stop(controllerInstance);
+				};
+				
+				controllerInstance.onStart();
 			
-			controllerInstance.onStart();
-			
-			_m.events.trigger('controller.started', { call: controllerCall, name: controllerName, options: options, instance: controllerInstance });
+				_m.events.trigger('controller.started', { call: controllerCall, name: controllerName, options: options, instance: controllerInstance, id: controllerInstance.getUID() });
+			}
 			
 			return controllerInstance;
 		},
@@ -627,27 +712,29 @@ var $uri = {
 		// @param {object} controllerInstance
 		// @return {boolean}
 		stop: function(controller) {
-			var returnVal = false, controllerName = '';
+			var returnVal = false, controllerName = '', controllerUID = '';
 			if (controller.isStarted() !== true) {
 				throw new Error('Unable to stop a controller - the controller was never started.');
 				returnVal = false;
 			}
 			else {
 				controllerName = controller.getName();
+				controllerUID = controller.getUID();
 				controller.beforeStop();
-				if (_m.debug) { _m.log('Stopping controller ' + controller.getName()); }
+				if (_m.debug) { _m.log('Stopping controller ' + controller.getName() + ' ' + controller.getUID()); }
 				controller.onStop();
-				for (var event in _m.controllerListeners[controller.getName()]) {
-					for (var listenerId in _m.controllerListeners[controller.getName()][event]) {
-						_m.events.stopListener(event, listenerId);
+				for (var event in _m.controllerListeners[controller.getUID()]) {
+					for (var listenerId in _m.controllerListeners[controller.getUID()][event]) {
+						if (_m.debug) { _m.log('Stopping controller ' + controller.getName() + ' ' + controller.getUID() + ' listener ' + listenerId + ' for ' + event); }
+						_m.events.stopListener(listenerId);
 					}
 				}
-				delete _m.controllerListeners[controller.getName()];
+				delete _m.controllerListeners[controller.getUID()];
 				controller.afterStop();
 				delete controller;
 				returnVal = true;
 			}
-			_m.events.trigger('controller.stopped', { name: controllerName });
+			_m.events.trigger('controller.stopped', { name: controllerName, id: controllerUID });
 			return returnVal;
 		},
 		
@@ -689,6 +776,12 @@ var $uri = {
 				throw new Error('Unable to remove a route ' + source + ' - route does not exist.');
 			}
 			return returnVal;
+		},
+		
+		// find a route based on given uri
+		// @param {string} uri
+		find: function(uriString) {
+			return _m.router.findRoute(uriString);
 		}
 	}
 	
@@ -697,44 +790,56 @@ var $uri = {
 		// @param {string} $uri
 		// @return {boolean}
 		goTo: function(newUri) {
-			var returnVal = false;
-			
 			if (!newUri) {
 				throw new Error('Cannot change URI - new URI not given.');
 			}
 			if (!newState) {
 				var newState = {};
 			}
-			
+
 			newUri = newUri.toString().removeTrailingSlash();
 			
-			if (_m.stateContainer === 'hash') {
-				document.location.hash = newUri;
-				
-				//window.onhashchange();
-				
-				if (_m.debug) { _m.log('URI changed to ' + newUri); }
-				returnVal = true;
-			}
-			else if (_m.stateContainer === 'history') {
-				window.history.pushState(null, _m.uriHelper.baseUri + newUri, _m.uriHelper.baseUri + newUri);
-				
-				if (_m.autoStartControllers) {
-					$controllers.start();
-				}
-				
-				if (_m.debug) { _m.log('URI changed to ' + newUri); }
-				returnVal = true;
+			if (_m.uriHelper.uriSwitcher) {
+				clearTimeout(_m.uriHelper.uriSwitcher);
 			}
 			
-			return returnVal;
+			var uriSwitchHandler = function() {
+				if (_m.stateContainer === 'hash') {
+					document.location.hash = newUri;
+					
+					if (_m.debug) { _m.log('URI changed to ' + newUri); }
+				}
+				else if (_m.stateContainer === 'history') {
+					window.history.pushState(null, _m.uriHelper.baseUri + newUri, _m.uriHelper.baseUri + newUri);
+					
+					if (_m.autoStartControllers) {
+						$controllers.start();
+					}
+					
+					if (_m.debug) { _m.log('URI changed to ' + newUri); }
+				}
+				
+				_m.uriHelper.stateManager();
+			};
+			
+			_m.uriHelper.uriSwitcher = setTimeout(uriSwitchHandler, 1);
+			
+			uriSwitchHandler();
+			
+			return true;
 		},
 		
 		// returns one URI segment
 		// @param {integer} i
 		// @return {string}
 		getSegment: function(i) {
-			return _m.uriHelper.segments[i];
+			var returnVal = '';
+			
+			if (typeof _m.uriHelper.segments[i] !== 'undefined') {
+				returnVal = _m.uriHelper.segments[i];
+			}
+			
+			return returnVal;
 		},
 
 		// returns multiple URI segments, joined with /
@@ -817,12 +922,45 @@ var $uri = {
 		// change the container for $routes
 		setContainer: function(container) {
 			if (container === 'history' || container === 'hash') {
-				_m.stateContainer = container;
+				if (container === 'history' && typeof window.history !== 'undefined' && typeof window.history.pushState !== 'undefined') {
+					_m.stateContainer = container;
+				}
+				else {
+					_m.stateContainer = 'hash';
+				}
 				return true;
 			}
 			else {
 				return false;
 			}
+		}
+	};
+	
+	// provides hooks for subscribe/unsubscribe/publish
+	$events = {
+		onListened: function(handler) {
+			var returnVal = false;
+			if (typeof handler === 'function') {
+				_m.events.onListened = handler;
+				returnVal = true;
+			}
+			return returnVal;
+		},
+		onTriggered: function(handler) {
+			var returnVal = false;
+			if (typeof handler === 'function') {
+				_m.events.onTriggered = handler;
+				returnVal = true;
+			}
+			return returnVal;
+		},
+		onListeningStopped: function(handler) {
+			var returnVal = false;
+			if (typeof handler === 'function') {
+				_m.events.onListeningStopped = handler;
+				returnVal = true;
+			}
+			return returnVal;
 		}
 	}
 	
